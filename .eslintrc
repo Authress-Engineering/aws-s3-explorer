@@ -1,27 +1,13 @@
 {
-  "parser": "@babel/eslint-parser",
   "parserOptions": {
     "sourceType": "module",
     "allowImportExportEverywhere": false,
-    "ecmaVersion": 2020,
-    "babelOptions": {
-      "configFile": "./webpack.babelrc.json"
-    }
+    "ecmaVersion": 2020
   },
   "extends": "airbnb-base",
-  "settings": {
-    "import/resolver":{
-      "webpack":{
-        "config":"webpack.config.js"
-      }
-    }
-  },
   "env": {
     "browser": true,
     "node": true
-  },
-  "globals": {
-    "globalThis": false // means it is not writeable
   },
   "rules": {
     "max-len": [1, 300, 2, {"ignoreComments": true}],

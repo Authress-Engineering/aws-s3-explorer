@@ -9,7 +9,8 @@
         "prismjs",
         "rapidoc",
         "redoc",
-        "sublicensees"
+        "sublicensees",
+        "thead"
     ],
     "files.exclude": {
         "**/lib": true,
