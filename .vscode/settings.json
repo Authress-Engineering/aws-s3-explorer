@@ -1,0 +1,18 @@
+{
+    "search.exclude": {
+        "**/lib": true,
+        "lib/*": true
+    },
+    "cSpell.words": [
+        "exportparts",
+        "kyleshockey",
+        "prismjs",
+        "rapidoc",
+        "redoc",
+        "sublicensees"
+    ],
+    "files.exclude": {
+        "**/lib": true,
+        "lib/*": true
+    }
+}

@@ -1,0 +1,41 @@
+on:
+  push:
+    branches:
+    - main
+    - master
+    - 'release/**'
+  pull_request:
+    branches:
+    - main
+    - master
+    - 'release/**'
+
+jobs:
+  nodejs:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: 14
+        registry-url: 'https://registry.npmjs.org'
+
+    - name: Install packages
+      run: yarn --frozen-lockfile
+    - name: Run Setup
+      run: yarn setup
+    - name: Run build
+      run: yarn build
+
+    - name: After build
+      if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' && github.event_name == 'push'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: yarn after_build
+    - name: Create Github Release and Tag
+      if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' && github.event_name == 'push'
+      run: |
+        git tag ${GITHUB_REF/refs\/heads\/release\//}.$GITHUB_RUN_NUMBER
+        git push origin ${GITHUB_REF/refs\/heads\/release\//}.$GITHUB_RUN_NUMBER

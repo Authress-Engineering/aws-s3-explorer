@@ -1,0 +1,49 @@
+{
+  "name": "s3-explorer",
+  "version": "0.0.0",
+  "description": "AWS S3 Object explorer in your browser - completely headless, runs without a server",
+  "author": "Rhosys Developers <developers@rhosys.ch>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Rhosys/s3-explorer.git"
+  },
+  "license": "Apache-2.0",
+  "keywords": [
+    "AWS",
+    "S3",
+    "S3 Explorer",
+    "S3 Object Explorer"
+  ],
+  "main": "src/openapi-explorer.js",
+  "files": [
+    "src",
+    "dist"
+  ],
+  "mode": "production",
+  "dependencies": {
+    "lodash.clonedeep": "^4.5.0"
+  },
+  "scripts": {
+    "build": "NODE_ENV=production webpack --mode=production",
+    "start": "webpack serve --mode=development --port=8080",
+    "serve": "serve -p 8080 src",
+    "lint": "eslint --ext .js src",
+    "setup": "node make.js setup",
+    "after_build": "node make.js after_build",
+    "test": "babel src -d lib && mocha -r esm tests/*.test.js"
+  },
+  "devDependencies": {
+    "ci-build-tools": "^1.0.13",
+    "commander": "^4.0.1",
+    "eslint": "^7.23.0",
+    "eslint-loader": "^4.0.2",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-mocha": "^7.0.1",
+    "eslint-plugin-node": "^11.1.0",
+    "fs-extra": "^8.1.0",
+    "glob": "^7.1.6"
+  },
+  "engines": {
+    "node": ">=10.21.0"
+  }
+}
