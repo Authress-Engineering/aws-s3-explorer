@@ -1,6 +1,6 @@
 <template>
-  <div class="row">
-    <div class="col-lg-12">
+  <div class="">
+    <div class="col-12">
       <div class="panel panel-primary dropzone">
 
         <!-- Panel including bucket/folder information and controls -->
@@ -28,9 +28,9 @@
                 <span id="bucket-plus" style="cursor: pointer;" class="btn fa fa-folder-plus fa-2x" title="New folder"></span>
                 <span id="bucket-upload" style="cursor: pointer;" class="btn fa fa-cloud-upload-alt fa-2x" @click="upload()" title="Upload files"></span>
                 <span id="bucket-trash" style="cursor: pointer;" class="btn fa fa-trash-alt fa-2x" title="Delete {{state.keys_selected.length}} selected object(s)" :disabled="!state.keys_selected.length" @click="trash()"></span>
-                <span id="bucket-info" style="cursor: pointer;" class="btn fa fa-info-circle fa-2x" title="Info"></span>
+                <span id="bucket-info" style="cursor: pointer;" class="btn fa fa-info-circle fa-2x" @click="openInfo()" title="Info"></span>
                 <span id="bucket-loader" style="cursor: pointer;" class="btn fa fa-sync fa-2x" @click="refresh()" title="Refresh"></span>
-                <span id="bucket-settings" style="cursor: pointer;" class="btn fa fa-cog fa-2x" title="Settings"></span>
+                <span id="bucket-settings" style="cursor: pointer;" class="btn fa fa-cog fa-2x" @click="openSettings()" title="Settings"></span>
               </div>
               <!-- Record count -->
               <div class="btn-group" v-if="state.keys_selected.length === 0">
@@ -64,17 +64,24 @@
 
       </div>
     </div>
+
+    <div class="col-12">
+      <SettingsModal v-if="state.showSettings" />
+    </div>
   </div>
 </template>
 
 <script setup>
 import { reactive, onMounted } from 'vue'
 import store from '../store';
+
+import SettingsModal from './settingsModal.vue';
+
 defineProps({
   msg: String
 });
 
-const state = reactive({ objectCount: 0, keys_selected: [], settings: {} });
+const state = reactive({ objectCount: 0, keys_selected: [], showSettings: true });
 onMounted(() => {
   console.log('****');
 

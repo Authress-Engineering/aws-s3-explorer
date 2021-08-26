@@ -15,8 +15,10 @@ There is one small configuration necessary to actually use the Explorer, and tha
 
 There are two options for this last step, the redirect can point to either the open source hosted instance running in github @ https://console.rhosys.ch or feel free to clone and deploy to your own private cloud.
 
+Jump over to the [AWS S3 explorer configuration](https://rhosys.github.io/aws-s3-explorer) for explicit steps.
+
 ### Cognito Setup
-Deploy a Cognito User Pool configured with associated providers, create an IAM role which trusts the Cognito Pool, and attach an IAM policy that has fully access to the buckets your users care about.
+Deploy a Cognito User Pool configured with associated providers, create an IAM role which trusts the Cognito User Pool, and attach an IAM policy that has fully access to the buckets your users care about.
 
 ### IAM Policy for Using S3 Explorer
 

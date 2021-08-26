@@ -1,5 +1,5 @@
 <template>
-  <div id="UploadModal" class="modal fade" tabindex="-1">
+  <div id="UploadModal" tabindex="-1">
     <div class="modal-dialog modal-xl">
       <div class="modal-content">
         <div class="modal-header">

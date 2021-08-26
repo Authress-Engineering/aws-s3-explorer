@@ -1,9 +1,9 @@
 <template>
-  <HelloWorld msg="Hello Vue 3 + Vite" />
+  <Home />
 </template>
 
 <script setup>
-import HelloWorld from './components/home.vue'
+import Home from './components/home.vue'
 
 // This starter template is using Vue 3 experimental <script setup> SFCs
 // Check out https://github.com/vuejs/rfcs/blob/master/active-rfcs/0040-script-setup.md
@@ -14,6 +14,5 @@ import HelloWorld from './components/home.vue'
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
 }
 </style>

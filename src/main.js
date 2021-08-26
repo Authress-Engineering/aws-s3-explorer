@@ -1,12 +1,6 @@
-/* ESLint file-level overrides */
 /* global AWS */
-/* eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
-/* eslint-disable no-console */
-/* eslint no-plusplus: "off" */
-/* eslint-env es6 */
 
 import { createApp } from 'vue';
-// import AsyncComputed from 'vue-async-computed'
 
 import App from './App.vue';
 

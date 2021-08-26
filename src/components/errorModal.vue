@@ -1,5 +1,5 @@
 <template>
-  <div id="ErrorModal" class="modal fade" tabindex="-1">
+  <div id="ErrorModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">

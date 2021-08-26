@@ -16,6 +16,10 @@ body {
     font-family: "Open Sans", sans-serif;
 }
 
+.h1, .h2, .h3, h1, h2, h3 {
+    margin-top: 0 !important;
+}
+
 td {
     /*font: 12px "Lucida Grande", Helvetica, Arial, sans-serif;*/
     font-family: "Open Sans", sans-serif;
@@ -94,6 +98,10 @@ table.dataTable tbody tr {
 
 #TrashModal77 {
     width: 700px;
+}
+
+.modal {
+    display: block;
 }
 
 .modal-header {

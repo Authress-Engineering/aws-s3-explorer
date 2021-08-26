@@ -1,9 +1,9 @@
 <template>
-  <div id="AddFolderModal" class="modal fade" tabindex="-1">
+  <div id="AddFolderModal" tabindex="-1">
     <div class="modal-dialog">
       <div class="modal-content">
         <form name="add_folder_form">
-          <fieldset>
+          <div>
             <div class="modal-header">
               <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
               <h4 class="modal-title">S3 Explorer: New Folder</h4>
@@ -30,7 +30,7 @@
                 </div>
               </div>
             </div>
-          </fieldset>
+          </div>
         </form>
       </div>
     </div>
