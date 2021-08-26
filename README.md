@@ -3,12 +3,12 @@
 This is an S3 Explorer for AWS. It provides a simple and straightforward way for users to login using SSO and explore available S3 Buckets. Everything is done in the browser and requires only minimal setup using either [AWS Cognito](https://) or [Authress](https://authress.io).
 
 Rhosys hosts an explorer to use out of the box for the community. For obvious security reasons, this is a UI only tool, and makes ZERO api calls to anywhere other than AWS. The following is a link to that explorer. However, if for some reason, other than security there is a benefit to hosting a clone of this, feel free to fork the repo and make any necessary changes. Alternatively, please contribute!
-## [Go to the Explorer](https://rhosys.github.io/aws-s3-explorer)
+## Go to the => [AWS S3 Explorer](https://rhosys.github.io/aws-s3-explorer)
 
 ![Folder selected screen](screenshots/explorer-folder.png)
 
-## Setup
-Most of the setup is just the auth provider, which involves:
+## The only setup step
+There is one small configuration necessary to actually use the Explorer, and that's to set up authentication to your AWS S3 Buckets. Most of the setup is just the auth provider, which involves:
 1. Configuring your SSO OAuth provider
 1. Configuring Cognito or Authress to link to the provider
 1. Setting the redirect url to point back to the S3 Explorer
