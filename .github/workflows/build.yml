@@ -39,3 +39,10 @@ jobs:
       run: |
         git tag ${GITHUB_REF/refs\/heads\/release\//}.$GITHUB_RUN_NUMBER
         git push origin ${GITHUB_REF/refs\/heads\/release\//}.$GITHUB_RUN_NUMBER
+    - name: deploy build to github
+      uses: JamesIves/github-pages-deploy-action@4.1.4
+      if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' && github.event_name == 'push'
+      with:
+        branch: production
+        folder: dist
+        clean: true
