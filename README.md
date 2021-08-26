@@ -5,7 +5,6 @@ This is an S3 Explorer for AWS. It provides a simple and straightforward way for
 
 ## [Go to the Explorer](https://rhosys.github.io/aws-s3-explorer)
 
-View all objects in folder:
 ![Folder selected screen](screenshots/explorer-folder.png)
 
 ## Setup
