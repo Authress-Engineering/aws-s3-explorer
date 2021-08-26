@@ -1,5 +1,5 @@
 /* ESLint file-level overrides */
-/* global AWS bootbox document moment window */
+/* global AWS */
 /* eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }] */
 /* eslint-disable no-console */
 /* eslint no-plusplus: "off" */

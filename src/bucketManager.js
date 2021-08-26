@@ -42,9 +42,10 @@ export function trashObjects() {
         lastmodified,
         timestamp,
         objectclass,
-        size,
+        size
       };
 
+      // eslint-disable-next-line no-console
       console.error('**** open modal to trash these', trashObject);
     }
   }

@@ -18,7 +18,8 @@ export function changeViewPrefix(prefix) {
     // Folder-level view
     store.prefix = prefix;
     store.view_prefix = null;
-    $.fn.dataTableExt.afnFiltering.length = 0;
+    // TODO: what was going on here
+    // $.fn.dataTableExt.afnFiltering.length = 0;
   } else {
     // Bucket-level view
     store.view_prefix = prefix;
@@ -34,5 +35,5 @@ export const s3StorageClasses = {
   REDUCED_REDUNDANCY: 'Reduced Redundancy',
   GLACIER: 'Glacier',
   INTELLIGENT_TIERING: 'Intelligent Tiering',
-  DEEP_ARCHIVE: 'Deep Archive',
+  DEEP_ARCHIVE: 'Deep Archive'
 };

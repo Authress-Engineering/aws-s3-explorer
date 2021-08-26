@@ -1,3 +1,4 @@
+/* eslint-disable */
 const s3ExplorerColumns = {
   check: 0, object: 1, folder: 2, date: 3, timestamp: 4, storageclass: 5, size: 6,
 };
