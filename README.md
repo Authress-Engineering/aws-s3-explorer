@@ -1,6 +1,10 @@
 # AWS S3 Explorer
 
 This is an S3 Explorer for AWS. It provides a simple and straightforward way for users to login using SSO and explore available S3 Buckets. Everything is done in the browser and requires only minimal setup using either [AWS Cognito](https://) or [Authress](https://authress.io).
+
+
+## [Go to the Explorer](https://rhosys.github.io/aws-s3-explorer)
+
 ## Screenshots
 
 Default starting view for public S3 bucket:
