@@ -5,34 +5,8 @@ This is an S3 Explorer for AWS. It provides a simple and straightforward way for
 
 ## [Go to the Explorer](https://rhosys.github.io/aws-s3-explorer)
 
-## Screenshots
-
-Default starting view for public S3 bucket:
-![Main screen][./screenshots/explorer-main-public.png]
-
-Default starting view for private S3 bucket:
-![Main screen][./screenshots/explorer-main-private.png]
-
 View all objects in folder:
-![Folder selected screen][./screenshots/explorer-folder.png]
-
-View all objects in bucket:
-![Bucket traversal screen][./screenshots/explorer-bucket.png]
-
-Upload objects to a bucket:
-![Bucket upload request screen][./screenshots/explorer-upload.png]
-
-Upload objects to a bucket succeeded:
-![Bucket upload confirmation screen][./screenshots/explorer-upload-success.png]
-
-Delete objects from a bucket:
-![Bucket object delete request screen][./screenshots/explorer-delete.png]
-
-Delete objects from a bucket succeeded:
-![Bucket object delete confirmation screen][./screenshots/explorer-delete-success.png]
-
-Bucket information:
-![Bucket information screen][./screenshots/explorer-info.png]
+![Folder selected screen](screenshots/explorer-folder.png)
 
 ## Setup
 Most of the setup is just the auth provider, which involves:
@@ -114,3 +88,27 @@ Note that CORS configurations do not, in and of themselves, authorize the user t
 ## Display Options
 
 This application allows visitors to view the contents of a bucket via its folders or by listing out all objects in a bucket. The default view is by folder, but users can choose Initial View: Bucket in Settings to display all objects in the bucket. Note that viewing an entire bucket that contains many objects could overwhelm the browser. We've successfully tested this application on a bucket with over 30,000 objects, but keep in mind that trying to list too many objects in a browser could lead to a poor user experience.
+
+
+## Screenshots
+
+View all objects in folder:
+![Folder selected screen](screenshots/explorer-folder.png)
+
+View all objects in bucket:
+![Bucket traversal screen](screenshots/explorer-bucket.png)
+
+Upload objects to a bucket:
+![Bucket upload request screen](screenshots/explorer-upload.png)
+
+Upload objects to a bucket succeeded:
+![Bucket upload confirmation screen](screenshots/explorer-upload-success.png)
+
+Delete objects from a bucket:
+![Bucket object delete request screen](screenshots/explorer-delete.png)
+
+Delete objects from a bucket succeeded:
+![Bucket object delete confirmation screen](screenshots/explorer-delete-success.png)
+
+Bucket information:
+![Bucket information screen](screenshots/explorer-info.png)
