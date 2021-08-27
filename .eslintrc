@@ -9,6 +9,9 @@
     "browser": true,
     "node": true
   },
+  "globals": {
+    "globalThis": true
+  },
   "rules": {
     "max-len": [1, 300, 2, {"ignoreComments": true}],
     "arrow-parens": "off",

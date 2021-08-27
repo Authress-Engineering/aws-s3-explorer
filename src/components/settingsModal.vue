@@ -15,13 +15,14 @@
                     Specify the Cognito User Pool login url and clientId
                   </div>
                   <div style="display: flex; flex-direction: row; justify-content: space-around">
-                    <input name="Cognito Login Domain URL" v-model="state.cognitoLoginUrl" type="text" class="form-control" placeholder="https://domain.auth.eu-west-1.amazoncognito.com" required="true" style="margin-right: 1rem" />
-                    <input name="Cognito Client ID" v-model="state.cognitoClientId" type="text" class="form-control" placeholder="4altof0dlefqqicdifb8tv4mjp" required="true" style="margin-right: 1rem" />
-                    <button type="submit" class="btn btn-primary" :disabled="!state.cognitoLoginUrl || !state.cognitoClientId" @click="cognitoLogin"><i class='fas fa-sign-in-alt'></i> Login</button>
+                    <input name="Login Domain URL" v-model="store.applicationLoginUrl" type="text" class="form-control" placeholder="https://domain.auth.eu-west-1.amazoncognito.com" required="true" style="margin-right: 1rem" />
+                    <input name="Application Client ID" v-model="store.applicationClientId" type="text" class="form-control" placeholder="4altof0dlefqqicdifb8tv4mjp" required="true" style="margin-right: 1rem" />
+                    <button type="submit" class="btn btn-primary" :disabled="!store.applicationLoginUrl || !store.applicationClientId" @click="cognitoLogin"><i class='fas fa-sign-in-alt'></i> Login</button>
                   </div>
                   <hr>
                   
                   <div>
+                    <h4>Setup Cognito SSO Login</h4>
                     Or setup up a cognito pool and configure the explorer.
                     <ol>
                       <li>
@@ -37,7 +38,7 @@
                             <li><strong>App Integration > Domain name</strong> > Configure the setup for a domain (either Cognito or your own custom one.</li>
                           </ul>
                       </li>
-                      <li>Return here and enter the Cognito User Pool ID</li>
+                      <li>Return here and enter the Cognito user pool login URL and ID above.</li>
                     </ol>
 <!-- 
                     <div class="input-group bottom-marg-10">
@@ -87,10 +88,12 @@
 
 <script setup>
 import { reactive, onMounted } from 'vue'
+import { DateTime } from 'luxon';
 import DEBUG from '../logger';
 import store from '../store';
+import jwtManager from '../jwtManager';
 
-const state = reactive({ region: null, cognitoLoginUrl: null, cognitoClientId: null });
+const state = reactive({ region: null });
 
 const sha256 = async (str) => {
 	return await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
@@ -113,46 +116,62 @@ const base64URLEncode = (string) => {
 const searchParams = new URL(location).searchParams;
 
 const cognitoLogin = async () => {
-  if (store.user) {
+  console.log('****', jwtManager.decode(store.tokens.access_token));
+  if (store.tokens && DateTime.fromSeconds(jwtManager.decode(store.tokens.access_token).exp) > DateTime.utc()) {
+    store.showSettings = false;
     return;
   }
 
   const code = searchParams.get("code");
   if (code !== null) {
     // remove the query parameters
-    window.history.replaceState({}, document.title, '/');
+    // window.history.replaceState({}, document.title, '/');
     const nonce = searchParams.get("state");
-    const codeVerifier = sessionStorage.getItem(`codeVerifier-${nonce}`);
-    sessionStorage.removeItem(`codeVerifier-${nonce}`);
+    const codeVerifier = localStorage.getItem('codeVerifier');
     if (codeVerifier === null) {
       throw new Error("Unexpected code");
     }
-    const res = await fetch(`${state.cognitoLoginUrl}/oauth2/token`, {
+
+    const codeExchangeBody = Object.entries({
+      "grant_type": "authorization_code",
+      "client_id": store.applicationClientId,
+      "code": searchParams.get("code"),
+      "code_verifier": codeVerifier,
+      "redirect_uri": `${window.location.origin}${window.location.pathname}`,
+    }).map(([k, v]) => `${k}=${v}`).join("&");
+    console.log('****', codeExchangeBody);
+
+    const res = await fetch(`${store.applicationLoginUrl}/oauth2/token`, {
       method: "POST",
       headers: new Headers({"content-type": "application/x-www-form-urlencoded"}),
-      body: Object.entries({
-        "grant_type": "authorization_code",
-        "client_id": cognitoClientId,
-        "code": searchParams.get("code"),
-        "code_verifier": codeVerifier,
-        "redirect_uri": window.location.origin,
-      }).map(([k, v]) => `${k}=${v}`).join("&"),
+      body: codeExchangeBody
     });
     if (!res.ok) {
       throw new Error(await res.json());
     }
     const tokens = await res.json();
-    localStorage.setItem("tokens", JSON.stringify(tokens));
+    store.tokens = tokens;
     return;
   }
+
+  if (!store.applicationLoginUrl || !store.applicationClientId) {
+    return;
+  }
+
+  try {
+      new URL(store.applicationLoginUrl);
+    } catch (error) {
+      return;
+    }
 
   // otherwise redirect login
   const nonce = await generateNonce();
 	const codeVerifier = await generateNonce();
-	sessionStorage.setItem(`codeVerifier-${nonce}`, codeVerifier);
+	localStorage.setItem('codeVerifier', codeVerifier);
 	const codeChallenge = base64URLEncode(await sha256(codeVerifier));
 	// redirect to login
-	window.location = `${state.cognitoLoginUrl}/login?response_type=code&client_id=${state.cognitoClientId}&state=${nonce}&code_challenge_method=S256&code_challenge=${codeChallenge}&redirect_uri=${window.location.origin}`;
+  const redirectUri = `${window.location.origin}${window.location.pathname}`;
+	window.location = `${store.applicationLoginUrl}/oauth2/authorize?response_type=code&client_id=${store.applicationClientId}&state=${nonce}&code_challenge_method=S256&code_challenge=${codeChallenge}&redirect_uri=${redirectUri}`;
 };
 
 onMounted(() => cognitoLogin());

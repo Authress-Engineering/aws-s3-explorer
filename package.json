@@ -21,6 +21,7 @@
   ],
   "mode": "production",
   "dependencies": {
+    "luxon": "^2.0.2",
     "vue": "^3.0.5"
   },
   "scripts": {

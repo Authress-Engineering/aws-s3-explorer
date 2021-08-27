@@ -1,12 +1,21 @@
-import { reactive } from 'vue';
+import { reactive, watch } from 'vue';
 
 import DEBUG from './logger';
 
-const store = reactive({
+const storedData = JSON.parse(localStorage.getItem('s3console') || '{}');
+
+const store = reactive(Object.assign({
   delimiter: '/',
   currentBucket: null,
   prefix: '/',
-  view_prefix: '/'
+  view_prefix: '/',
+  applicationClientId: null,
+  applicationLoginUrl: null,
+  showSettings: true
+}, storedData));
+
+watch(store, () => {
+  localStorage.setItem('s3console', JSON.stringify(store));
 });
 
 export default store;

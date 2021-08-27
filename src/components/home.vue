@@ -66,7 +66,7 @@
     </div>
 
     <div class="col-12">
-      <SettingsModal v-if="state.showSettings" />
+      <SettingsModal v-if="store.showSettings" />
     </div>
   </div>
 </template>
@@ -81,7 +81,7 @@ defineProps({
   msg: String
 });
 
-const state = reactive({ objectCount: 0, keys_selected: [], showSettings: true });
+const state = reactive({ objectCount: 0, keys_selected: [] });
 onMounted(() => {
   console.log('****');
 
@@ -99,6 +99,10 @@ const refresh = () => {
 const upload = () => {
   console.log('**** upload');
 };
+
+const openSettings = () => {
+  store.showSettings = true;
+}
 </script>
 
 <style scoped>
