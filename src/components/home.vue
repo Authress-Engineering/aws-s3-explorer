@@ -118,6 +118,7 @@ const selectBucket = () => {
 }
 
 const openInfo = () => {
+  store.showBucketInfo = false;
   store.showBucketInfo = true;
 };
 

@@ -48,6 +48,7 @@
                           <ul>
                             <li>Create an identity pool in the same region as the user pool</li>
                             <li>Specify the Cognito Pool from the previous step as the Authentication Provider</li>
+                            <li><strong>Unauthenticated identities:</strong> > Enable access to unauthenticated identities (You must enable this to work, unauthenticated users will not be allowed access, so it is not a security issue)</li>
                           </ul>
                       </li>
                       <li>Return here and enter the Cognito user pool login URL, ID, and identity pool ID above.</li>

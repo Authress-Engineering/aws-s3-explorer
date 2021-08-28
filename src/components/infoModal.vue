@@ -3,7 +3,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <button type="button" class="close" @click="close" aria-hidden="true">&times;</button>
           <h4 class="modal-title">S3 Explorer: Information</h4>
         </div>
         <div class="modal-body">
@@ -25,12 +25,12 @@
               </div>
               <div class="tab-pane" id="cors" v-if="info.cors">
                 <br/>
-                <p>The currently-configured CORS Configuration for {{store.currentBucket}} is below.</p>
+                <p>The currently configured CORS Configuration for {{store.currentBucket}} is below.</p>
                 <pre><span id="info-cors"></span></pre>
               </div>
               <div class="tab-pane" id="policy" v-if="info.policy">
                 <br/>
-                <p>The currently-configured Bucket Policy for {{store.currentBucket}} is below.</p>
+                <p>The currently configured Bucket Policy for {{store.currentBucket}} is below.</p>
                 <pre><span id="info-policy"></span></pre>
               </div>
               <div class="tab-pane" id="corsref">
@@ -46,20 +46,25 @@ To do this, select your bucket in the buckets panel of the Amazon S3 Console and
 </p>
                   <p>
 <pre>
-&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;CORSConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"&gt;
-  &lt;CORSRule&gt;
-    &lt;AllowedOrigin&gt;*&lt;/AllowedOrigin&gt;
-    &lt;AllowedMethod&gt;GET&lt;/AllowedMethod&gt;
-    &lt;AllowedMethod&gt;POST&lt;/AllowedMethod&gt;
-    &lt;AllowedMethod&gt;PUT&lt;/AllowedMethod&gt;
-    &lt;AllowedMethod&gt;HEAD&lt;/AllowedMethod&gt;
-    &lt;MaxAgeSeconds&gt;3000&lt;/MaxAgeSeconds&gt;
-    &lt;AllowedHeader&gt;*&lt;/AllowedHeader&gt;
-    &lt;ExposeHeader&gt;ETag&lt;/ExposeHeader&gt;
-    &lt;ExposeHeader&gt;x-amz-meta-myheader&lt;/ExposeHeader&gt;
-  &lt;/CORSRule&gt;
-&lt;/CORSConfiguration&gt;
+  [
+    {
+        "AllowedHeaders": [
+            "*"
+        ],
+        "AllowedMethods": [
+            "PUT", "POST", "DELETE", "HEAD", "GET"
+        ],
+        "AllowedOrigins": [
+            "*"
+        ],
+        "ExposeHeaders": [
+            "x-amz-server-side-encryption",
+            "x-amz-request-id",
+            "x-amz-id-2"
+        ],
+        "MaxAgeSeconds": 3000
+    }
+]
 </pre>
 <p>
 Please see the project <a target="_blank" href="https://github.com/awslabs/aws-js-s3-explorer/blob/v2-alpha/README.md">README</a> for more specific details on how to create an appropriate CORS configuration.
@@ -96,7 +101,7 @@ Please see the project <a target="_blank" href="https://github.com/awslabs/aws-j
         <div class="modal-footer">
           <div class="form-group">
             <div class="col-sm-offset-2 col-sm-10">
-              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-default" @click="close">Close</button>
             </div>
           </div>
         </div>
@@ -117,13 +122,16 @@ onMounted(() => {
   const params = { Bucket: store.currentBucket };
   DEBUG.log('call getBucketPolicy:', store.currentBucket);
 
-  new AWS.S3().getBucketPolicy(params, (err, data) => {
+  const s3Client = new AWS.S3({ maxRetries: 0 });
+  s3Client.getBucketPolicy(params, (err, data) => {
     let text;
-    if (err && err.code === 'NoSuchBucketPolicy') {
+    if (err && err.code === 'NetworkingError') {
+      info.cors = 'This bucket does not have CORS enabled, preventing gathering information about it.';
+    } else if (err && err.code === 'NoSuchBucketPolicy') {
       DEBUG.log(err);
       info.policy = 'No bucket policy.';
     } else if (err) {
-      DEBUG.log(err);
+      DEBUG.log(err.code, err);
       info.policy = JSON.stringify(err);
     } else {
       DEBUG.log(data.Policy);
@@ -131,13 +139,15 @@ onMounted(() => {
     }
   });
 
-  new AWS.S3().getBucketCors(params, (err, data) => {
+  s3Client.getBucketCors(params, (err, data) => {
     let text;
-    if (err && err.code === 'NoSuchCORSConfiguration') {
+    if (err && err.code === 'NetworkingError') {
+      info.cors = 'This bucket does not have CORS enabled.';
+    } else if (err && err.code === 'NoSuchCORSConfiguration') {
       DEBUG.log(err);
       info.cors = 'This bucket has no CORS configuration.';
     } else if (err) {
-      DEBUG.log(err);
+      DEBUG.log(err.code, err);
       info.cors = JSON.stringify(err);
     } else {
       DEBUG.log(data.CORSRules);
@@ -145,4 +155,8 @@ onMounted(() => {
     }
   });
 });
+
+const close = () => {
+  store.showBucketInfo = false;
+};
 </script>
