@@ -252,7 +252,7 @@ function ViewController($scope, SharedService) {
         store.getViewPrefix(),
       );
       $scope.listobjects(
-        store.bucket,
+        store.currentBucket,
         store.prefix,
         store.delimiter,
       );

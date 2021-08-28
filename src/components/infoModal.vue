@@ -21,7 +21,7 @@
                 <p>Amazon S3 Explorer is an application that uses the AWS JavaScript SDK in the Browser to make the contents of an S3 bucket easy to view in a web browser.</p>
                 <p>To upload files, first navigate to the bucket &amp; folder of your choice and then drag &amp; drop files onto the main S3 Explorer table.</p>
                 <p>To delete files, first choose the files you want to delete by clicking checkboxes in the Select column, then click the Trash icon. You will be asked to confirm this action.</p>
-                <p>For more details and to download the source code, see our <a target="_blank" href="https://github.com/awslabs/aws-js-s3-explorer">GitHub page</a>.</p>
+                <p>For more details and to download the source code, see our <a target="_blank" href="https://github.com/rhosys/aws-s3-explorer">GitHub page</a>.</p>
               </div>
               <div class="tab-pane" id="cors" v-if="info.cors">
                 <br/>
@@ -75,13 +75,13 @@ Please see the project <a target="_blank" href="https://github.com/awslabs/aws-j
 {
   "Version": "2012-10-17",
   "Statement": [{
-    "Sid": "AllPermissionsForOwner",
+    "Sid": "PermissionsForUser",
     "Effect": "Allow",
     "Principal": {
-      "AWS": "arn:aws:iam::999999999999:root"
+      "AWS": "arn:aws:iam::AWS_ACCOUNT_ID:roles/ROLE_ID"
     },
     "Action": "s3:*",
-    "Resource": "arn:aws:s3:::mybucket/*"
+    "Resource": "arn:aws:s3:::{{ store.currentBucket }}/*"
   }]
 }
 </pre>
@@ -117,7 +117,7 @@ onMounted(() => {
   const params = { Bucket: store.currentBucket };
   DEBUG.log('call getBucketPolicy:', store.currentBucket);
 
-  new AWS.S3(AWS.config).getBucketPolicy(params, (err, data) => {
+  new AWS.S3().getBucketPolicy(params, (err, data) => {
     let text;
     if (err && err.code === 'NoSuchBucketPolicy') {
       DEBUG.log(err);
@@ -131,7 +131,7 @@ onMounted(() => {
     }
   });
 
-  new AWS.S3(AWS.config).getBucketCors(params, (err, data) => {
+  new AWS.S3().getBucketCors(params, (err, data) => {
     let text;
     if (err && err.code === 'NoSuchCORSConfiguration') {
       DEBUG.log(err);

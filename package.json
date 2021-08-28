@@ -21,8 +21,10 @@
   ],
   "mode": "production",
   "dependencies": {
+    "@suadelabs/vue3-multiselect": "^1.0.2",
     "luxon": "^2.0.2",
-    "vue": "^3.0.5"
+    "vue": "^3.0.5",
+    "vue-multiselect": "^2.1.6"
   },
   "scripts": {
     "build": "vite build",

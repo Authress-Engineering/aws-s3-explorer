@@ -4,41 +4,45 @@
       <div class="panel panel-primary dropzone">
 
         <!-- Panel including bucket/folder information and controls -->
-        <div class="panel-heading clearfix">
+        <div class="panel-heading" style="display: flex; direction: row; align-items: center; justify-content: space-between">
 
           <!-- Bucket selection and breadcrumbs -->
-          <div class="btn-group pull-left">
+          <div style="display: flex; direction: row; align-items: center">
             <!-- Utility name -->
-            <div class="title pull-left">AWS S3 Explorer</div>
+            <div class="title ">AWS S3 Explorer</div>
             <!-- Bucket breadcrumbs -->
-            <div class="pull-right" v-if="store.bucket">
-              <ul id="breadcrumb" class="breadcrumb pull-right">
-                <li class="active">
-                  <a href="#">{{ store.bucket }}</a>
-                </li>
-              </ul>
+            <div class="" v-if="store.currentBucket" style="margin-right: 0.5rem;">
+              <button type="button" class="btn btn-default" @click="selectBucket">{{ store.currentBucket }}</button>
+            </div>
+
+            <div v-else>
+              <button type="button" class="btn btn-default" @click="selectBucket">Select Bucket</button>
+            </div>
+                        
+
+            <!-- Record count -->
+            <div v-if="store.currentBucket">
+              <div class="btn-group" v-if="state.keys_selected.length === 0">
+                <span id="badgecount" style="cursor: default;" class="btn badge " title="Object count">{{state.objectCount}}</span>
+              </div>
+              <!-- Record/checked count -->
+              <div class="btn-group" v-if="state.keys_selected.length > 0">
+                <span id="badgecount" style="cursor: default;" class="btn badge " title="Selected object count">{{ state.keys_selected.length }} of {{state.objectCount}}</span>
+              </div>
             </div>
           </div>
 
           <!-- Folder/Bucket radio group and progress spinner -->
-          <div id="navbuttons" class="pull-right">
+          <div id="navbuttons" class="">
             <div>
               <!-- Info/Refresh/Settings buttons -->
               <div class="btn-group">
-                <span id="bucket-plus" style="cursor: pointer;" class="btn fa fa-folder-plus fa-2x" title="New folder"></span>
-                <span id="bucket-upload" style="cursor: pointer;" class="btn fa fa-cloud-upload-alt fa-2x" @click="upload()" title="Upload files"></span>
-                <span id="bucket-trash" style="cursor: pointer;" class="btn fa fa-trash-alt fa-2x" title="Delete {{state.keys_selected.length}} selected object(s)" :disabled="!state.keys_selected.length" @click="trash()"></span>
-                <span id="bucket-info" style="cursor: pointer;" class="btn fa fa-info-circle fa-2x" @click="openInfo()" title="Info"></span>
-                <span id="bucket-loader" style="cursor: pointer;" class="btn fa fa-sync fa-2x" @click="refresh()" title="Refresh"></span>
-                <span id="bucket-settings" style="cursor: pointer;" class="btn fa fa-cog fa-2x" @click="openSettings()" title="Settings"></span>
-              </div>
-              <!-- Record count -->
-              <div class="btn-group" v-if="state.keys_selected.length === 0">
-                <span id="badgecount" style="cursor: default;" class="btn badge pull-right" title="Object count">{{state.objectCount}}</span>
-              </div>
-              <!-- Record/checked count -->
-              <div class="btn-group" v-if="state.keys_selected.length > 0">
-                <span id="badgecount" style="cursor: default;" class="btn badge pull-right" title="Selected object count">{{ state.keys_selected.length }} of {{state.objectCount}}</span>
+                <span style="cursor: pointer;" class="btn fa fa-folder-plus fa-2x" title="New folder"></span>
+                <span style="cursor: pointer;" class="btn fa fa-cloud-upload-alt fa-2x" @click="upload()" title="Upload files"></span>
+                <span style="cursor: pointer;" class="btn fa fa-trash-alt fa-2x" :title="`Delete ${state.keys_selected.length} selected object(s)`" :disabled="!state.keys_selected.length" @click="trash()"></span>
+                <span v-if="store.currentBucket" style="cursor: pointer;" class="btn fa fa-info-circle fa-2x" @click="openInfo()" title="Info"></span>
+                <span style="cursor: pointer;" class="btn fa fa-sync fa-2x" @click="refresh()" title="Refresh"></span>
+                <span style="cursor: pointer;" class="btn fa fa-sign-out-alt fa-2x" @click="logout()" title="Settings"></span>
               </div>
             </div>
           </div>
@@ -67,6 +71,9 @@
 
     <div class="col-12">
       <SettingsModal v-if="store.showSettings" />
+      <BucketSelectorModal v-if="store.showBucketSelector" />
+      <BucketInfo v-if="store.showBucketInfo" />
+
     </div>
   </div>
 </template>
@@ -76,6 +83,8 @@ import { reactive, onMounted } from 'vue'
 import store from '../store';
 
 import SettingsModal from './settingsModal.vue';
+import BucketSelectorModal from './bucketSelectorModal.vue';
+import BucketInfo from './infoModal.vue';
 
 defineProps({
   msg: String
@@ -83,13 +92,10 @@ defineProps({
 
 const state = reactive({ objectCount: 0, keys_selected: [] });
 onMounted(() => {
-  console.log('****');
-
-  if (!store.user) {
-    // handle redirect from cognito
-    return;
-    // otherwise popup modal to start the process
-  }
+  store.currentBucket = null;
+  store.showBucketSelector = false;
+  store.showBucketInfo = false;
+  store.showSettings = true;
 });
 
 const refresh = () => {
@@ -100,9 +106,21 @@ const upload = () => {
   console.log('**** upload');
 };
 
-const openSettings = () => {
-  store.showSettings = true;
+const logout = () => {
+  store.tokens = null;
+  const redirectUri = `${window.location.origin}${window.location.pathname}`;
+  window.location = `${store.applicationLoginUrl}/logout?client_id=${store.applicationClientId}&redirect_uri=${redirectUri}&response_type=code`;
+  return;
 }
+
+const selectBucket = () => {
+  store.showBucketSelector = true;
+}
+
+const openInfo = () => {
+  store.showBucketInfo = true;
+};
+
 </script>
 
 <style scoped>

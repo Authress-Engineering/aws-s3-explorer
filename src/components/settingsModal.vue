@@ -14,22 +14,27 @@
                   <div>
                     Specify the Cognito User Pool login url and clientId
                   </div>
-                  <div style="display: flex; flex-direction: row; justify-content: space-around">
-                    <input name="Login Domain URL" v-model="store.applicationLoginUrl" type="text" class="form-control" placeholder="https://domain.auth.eu-west-1.amazoncognito.com" required="true" style="margin-right: 1rem" />
-                    <input name="Application Client ID" v-model="store.applicationClientId" type="text" class="form-control" placeholder="4altof0dlefqqicdifb8tv4mjp" required="true" style="margin-right: 1rem" />
-                    <button type="submit" class="btn btn-primary" :disabled="!store.applicationLoginUrl || !store.applicationClientId" @click="cognitoLogin"><i class='fas fa-sign-in-alt'></i> Login</button>
+                  <div>
+                    Login Domain Url: <input name="Login Domain URL" v-model="store.applicationLoginUrl" type="text" class="form-control" placeholder="https://domain.auth.eu-west-1.amazoncognito.com" required="true" style="margin-right: 1rem" />
+                    <br>
+                    Client ID: <input name="Application Client ID" v-model="store.applicationClientId" type="text" class="form-control" placeholder="4altof0dlefqqicdifb8tv4mjp" required="true" style="margin-right: 1rem" />
+                    <br>
+                    Identity Pool ID: <input name="Cognito Identity Pool" v-model="store.identityPoolId" type="text" class="form-control" placeholder="eu-west-1:3b921bfd-4443-4a62-ba15-24efbe3b2a05" required="true" style="margin-right: 1rem" />
+                    <br>
+                    <button type="submit" class="btn btn-primary" :disabled="!store.applicationLoginUrl || !store.applicationClientId || !store.identityPoolId" @click="cognitoLogin"><i class='fas fa-sign-in-alt'></i> Login</button>
                   </div>
                   <hr>
                   
                   <div>
                     <h4>Setup Cognito SSO Login</h4>
-                    Or setup up a cognito pool and configure the explorer.
+                    Or setup up a cognito pool, cognito identity pool, and configure the explorer.
                     <ol>
                       <li>
                         Cognito User Pool:
                           <ul>
                             <li>Create a User Pool in any region (Not an identity pool)</li>
                             <li>Since we will use SSO, most of the configuration is irrelevant</li>
+                            <li><strong>General settings > Users and Groups > Groups</strong> > Update the auto generated group with a role that has access to the necessary buckets</li>
                             <li><strong>General settings > App clients</strong> > Add the S3 Console as an app</li>
                             <li><strong>Federation > Identity providers</strong> > Add your SSO provider of choice to the OAuth settings</li>
                             <li><strong>App Integration > App client settings</strong> > Enable identity provider just created</li>
@@ -38,7 +43,14 @@
                             <li><strong>App Integration > Domain name</strong> > Configure the setup for a domain (either Cognito or your own custom one.</li>
                           </ul>
                       </li>
-                      <li>Return here and enter the Cognito user pool login URL and ID above.</li>
+                      <li>
+                        Cognito Identity Pool:
+                          <ul>
+                            <li>Create an identity pool in the same region as the user pool</li>
+                            <li>Specify the Cognito Pool from the previous step as the Authentication Provider</li>
+                          </ul>
+                      </li>
+                      <li>Return here and enter the Cognito user pool login URL, ID, and identity pool ID above.</li>
                     </ol>
 <!-- 
                     <div class="input-group bottom-marg-10">
@@ -116,17 +128,25 @@ const base64URLEncode = (string) => {
 const searchParams = new URL(location).searchParams;
 
 const cognitoLogin = async () => {
-  console.log('****', jwtManager.decode(store.tokens.access_token));
+  store.initialized = true;
   if (store.tokens && DateTime.fromSeconds(jwtManager.decode(store.tokens.access_token).exp) > DateTime.utc()) {
+    await convertCredentialsToAWSCredentials();
     store.showSettings = false;
     return;
   }
 
   const code = searchParams.get("code");
   if (code !== null) {
-    // remove the query parameters
-    // window.history.replaceState({}, document.title, '/');
-    const nonce = searchParams.get("state");
+    const newUrl = new URL(window.location);
+    newUrl.searchParams.delete('nonce');
+    newUrl.searchParams.delete('expires_in');
+    newUrl.searchParams.delete('access_token');
+    newUrl.searchParams.delete('id_token');
+    newUrl.searchParams.delete('state');
+    newUrl.searchParams.delete('code');
+    newUrl.searchParams.delete('iss');
+    history.replaceState({}, undefined, newUrl.toString());
+
     const codeVerifier = localStorage.getItem('codeVerifier');
     if (codeVerifier === null) {
       throw new Error("Unexpected code");
@@ -135,11 +155,10 @@ const cognitoLogin = async () => {
     const codeExchangeBody = Object.entries({
       "grant_type": "authorization_code",
       "client_id": store.applicationClientId,
-      "code": searchParams.get("code"),
+      "code": code,
       "code_verifier": codeVerifier,
       "redirect_uri": `${window.location.origin}${window.location.pathname}`,
     }).map(([k, v]) => `${k}=${v}`).join("&");
-    console.log('****', codeExchangeBody);
 
     const res = await fetch(`${store.applicationLoginUrl}/oauth2/token`, {
       method: "POST",
@@ -151,10 +170,12 @@ const cognitoLogin = async () => {
     }
     const tokens = await res.json();
     store.tokens = tokens;
+    await convertCredentialsToAWSCredentials();
+    store.showSettings = false;
     return;
   }
 
-  if (!store.applicationLoginUrl || !store.applicationClientId) {
+  if (!store.applicationLoginUrl || !store.applicationClientId || !store.identityPoolId) {
     return;
   }
 
@@ -172,7 +193,31 @@ const cognitoLogin = async () => {
 	// redirect to login
   const redirectUri = `${window.location.origin}${window.location.pathname}`;
 	window.location = `${store.applicationLoginUrl}/oauth2/authorize?response_type=code&client_id=${store.applicationClientId}&state=${nonce}&code_challenge_method=S256&code_challenge=${codeChallenge}&redirect_uri=${redirectUri}`;
+  await convertCredentialsToAWSCredentials();
 };
 
-onMounted(() => cognitoLogin());
+onMounted(() => {
+  if (!store.initialized) {
+    cognitoLogin();
+  }
+});
+
+const convertCredentialsToAWSCredentials = async () => {
+  if (!store.identityPoolId) {
+    return;
+  }
+
+  try { 
+    AWS.config.region = store.identityPoolId.split(':')[0];
+    AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+      IdentityPoolId: store.identityPoolId
+    });
+
+    DEBUG.log('Checking credentials');
+    const stsResult = await new AWS.STS().getCallerIdentity().promise();
+    DEBUG.log('AWS Credentials Set', stsResult);
+  } catch (error) {
+    DEBUG.log(`Failed to set credentials, following requests will not work due to the error:`, error);
+  }
+};
 </script>

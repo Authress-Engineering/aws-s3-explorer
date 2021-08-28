@@ -7,12 +7,19 @@ const storedData = JSON.parse(localStorage.getItem('s3console') || '{}');
 const store = reactive(Object.assign({
   delimiter: '/',
   currentBucket: null,
+  rememberedBuckets: [],
   prefix: '/',
   view_prefix: '/',
   applicationClientId: null,
   applicationLoginUrl: null,
+  identityPoolId: null,
+
   showSettings: true
-}, storedData));
+}, storedData, {
+  initialized: false,
+  showBucketSelector: false,
+  showBucketInfo: false
+}));
 
 watch(store, () => {
   localStorage.setItem('s3console', JSON.stringify(store));
