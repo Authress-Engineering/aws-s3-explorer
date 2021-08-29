@@ -111,13 +111,7 @@ Delete objects from a bucket:
 Delete objects from a bucket succeeded:
 ![Bucket object delete confirmation screen](screenshots/explorer-delete-success.png)
 
-Bucket information:
-![Bucket information screen](screenshots/explorer-info.png)
-<<<<<<< HEAD
-=======
-
 ## Contribution
 
 ### Development
 This project uses Vue 3, and as this is much different from Vue 2, [recommend reading is available](https://v3.vuejs.org/guide/computed.html).
->>>>>>> Add properties and bucket fetching.
