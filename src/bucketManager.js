@@ -1,8 +1,44 @@
 /* globals moment */
 
+import { watch, computed } from 'vue';
 import DEBUG from './logger';
 import store from './store';
 import { prefix2folder, fullpath2filename, path2short, isFolder, prefix2parentfolder, fullpath2pathname, bytesToSize } from './converts';
+
+const currentBucket = computed({
+  get() {
+    return store.currentBucket;
+  }
+});
+watch(currentBucket, () => {
+  fetchBucketObjects();
+});
+
+export async function fetchBucketObjects() {
+  const s3Client = new AWS.S3({ region: store.region });
+  const params = {
+    Bucket: store.currentBucket,
+    Delimiter: store.delimiter,
+    Prefix: store.currentDirectory || undefined,
+    RequestPayer: 'requester'
+  };
+  let resultList;
+  while (params.ContinuationToken || !resultList) {
+    const result = await s3Client.listObjectsV2(params).promise();
+    resultList = (resultList || []).concat(result.CommonPrefixes.map(object => ({
+      key: object.Prefix.slice(0, -1),
+      type: 'DIRECTORY'
+    }))).concat(result.Contents.map(object => ({
+      key: object.Key,
+      lastModified: object.LastModified,
+      size: object.Size,
+      storageClass: object.StorageClass,
+      type: 'PATH'
+    })));
+    params.ContinuationToken = result.NextContinuationToken;
+    store.objects = resultList;
+  }
+}
 
 export function trashObjects() {
   DEBUG.log('Trash:', store.keys_selected);
@@ -48,5 +84,20 @@ export function trashObjects() {
       // eslint-disable-next-line no-console
       console.error('**** open modal to trash these', trashObject);
     }
+  }
+}
+
+export async function validateConfiguration(bucket) {
+  const s3Client = new AWS.S3({ maxRetries: 0 });
+  try {
+    await s3Client.getBucketCors({ Bucket: bucket }).promise();
+  } catch (err) {
+    if (err && err.code === 'NetworkingError') {
+      throw Error('CORS');
+    }
+    if (err && err.code === 'AccessDenied') {
+      throw Error('PERMISSIONS');
+    }
+    throw err;
   }
 }

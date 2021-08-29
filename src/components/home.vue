@@ -40,8 +40,7 @@
                 <span style="cursor: pointer;" class="btn fa fa-folder-plus fa-2x" title="New folder"></span>
                 <span style="cursor: pointer;" class="btn fa fa-cloud-upload-alt fa-2x" @click="upload()" title="Upload files"></span>
                 <span style="cursor: pointer;" class="btn fa fa-trash-alt fa-2x" :title="`Delete ${state.keys_selected.length} selected object(s)`" :disabled="!state.keys_selected.length" @click="trash()"></span>
-                <span v-if="store.currentBucket" style="cursor: pointer;" class="btn fa fa-info-circle fa-2x" @click="openInfo()" title="Info"></span>
-                <span style="cursor: pointer;" class="btn fa fa-sync fa-2x" @click="refresh()" title="Refresh"></span>
+                <span v-if="store.currentBucket" style="cursor: pointer;" class="btn fa fa-sync fa-2x" @click="refresh()" title="Refresh"></span>
                 <span style="cursor: pointer;" class="btn fa fa-sign-out-alt fa-2x" @click="logout()" title="Settings"></span>
               </div>
             </div>
@@ -50,19 +49,32 @@
 
         <!-- Panel including S3 object table -->
         <div class="panel-body">
-          <table class="table table-bordered table-hover table-striped" style="width:100%" id="s3objects-table">
+          <table class="table table-bordered table-hover table-striped" style="width:100%;" id="s3objects-table">
             <thead>
               <tr>
                 <th class="text-center">Select</th>
                 <th>Object</th>
-                <th>Folder</th>
                 <th>Last Modified</th>
-                <th>Timestamp</th>
                 <th>Class</th>
                 <th>Size</th>
               </tr>
             </thead>
-            <tbody id="s3objects-tbody"></tbody>
+            <tbody>
+              <tr v-for="directory in sortedObjects.filter(o => o.type === 'DIRECTORY')" :key="directory.key">
+                <td></td>
+                <td><i class="fas fa-folder" /> {{ directory.key }}</td>
+                <td style="text-align: center"></td>
+                <td style="text-align: center"></td>
+                <td style="text-align: center"></td>
+              </tr>
+              <tr v-for="path in sortedObjects.filter(o => o.type === 'PATH')" :key="path.key">
+                <td style="text-align: center">-</td>
+                <td>{{ path.key }}</td>
+                <td style="text-align: center">{{ o.lastModified }}</td>
+                <td style="text-align: center">{{ o.storageClass }}</td>
+                <td style="text-align: center">{{ o.size }}</td>
+              </tr>
+            </tbody>
           </table>
         </div>
 
@@ -75,35 +87,32 @@
       <BucketInfo v-if="store.showBucketInfo" />
 
     </div>
+
+    <PoweredBy />
   </div>
 </template>
 
 <script setup>
-import { reactive, onMounted } from 'vue'
-import store from '../store';
+import { reactive, onMounted, computed } from 'vue'
+import VueTable from "vue3-table-lite";
 
+import store from '../store';
 import SettingsModal from './settingsModal.vue';
 import BucketSelectorModal from './bucketSelectorModal.vue';
 import BucketInfo from './infoModal.vue';
+import PoweredBy from './poweredBy.vue';
+
+import { login } from '../awsUtilities';
+import { fetchBucketObjects } from '../bucketManager';
 
 defineProps({
   msg: String
 });
 
 const state = reactive({ objectCount: 0, keys_selected: [] });
-onMounted(() => {
-  store.currentBucket = null;
-  store.showBucketSelector = false;
-  store.showBucketInfo = false;
-  store.showSettings = true;
-});
 
 const refresh = () => {
   console.log('*** Refresh');
-};
-
-const upload = () => {
-  console.log('**** upload');
 };
 
 const logout = () => {
@@ -122,6 +131,18 @@ const openInfo = () => {
   store.showBucketInfo = true;
 };
 
+const sortedObjects = computed({
+  get: () => {
+    return store.objects.sort((a, b) => a.key.localeCompare(b.key));
+  }
+});
+
+onMounted(async () => {
+  if (!store.initialized) {
+    await login();
+    await fetchBucketObjects();
+  }
+});
 </script>
 
 <style scoped>

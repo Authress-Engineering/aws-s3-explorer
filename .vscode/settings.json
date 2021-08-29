@@ -11,6 +11,7 @@
         "rapidoc",
         "redoc",
         "sublicensees",
+        "tbody",
         "thead"
     ],
     "files.exclude": {

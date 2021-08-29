@@ -5,16 +5,20 @@ import DEBUG from './logger';
 const storedData = JSON.parse(localStorage.getItem('s3console') || '{}');
 
 const store = reactive(Object.assign({
+  region: null,
+
   delimiter: '/',
   currentBucket: null,
   rememberedBuckets: [],
-  prefix: '/',
-  view_prefix: '/',
+  currentDirectory: null,
   applicationClientId: null,
   applicationLoginUrl: null,
   identityPoolId: null,
+  objects: [],
 
-  showSettings: true
+  showSettings: false,
+  showBucketInfo: false,
+  showBucketSelector: false
 }, storedData, {
   initialized: false,
   showBucketSelector: false,
@@ -23,6 +27,7 @@ const store = reactive(Object.assign({
 
 watch(store, () => {
   localStorage.setItem('s3console', JSON.stringify(store));
+  AWS.config.update({ region: store.region });
 });
 
 export default store;
