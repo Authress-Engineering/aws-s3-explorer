@@ -15,6 +15,10 @@ watch(currentBucket, () => {
 });
 
 export async function fetchBucketObjects() {
+  if (!store.currentBucket) {
+    return;
+  }
+
   const s3Client = new AWS.S3({ region: store.region });
   const params = {
     Bucket: store.currentBucket,
