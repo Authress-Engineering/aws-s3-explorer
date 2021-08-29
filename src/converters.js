@@ -83,3 +83,24 @@ export function isFolder(path) {
 export function stripLeadTrailSlash(s) {
   return s.replace(/^\/+/g, '').replace(/\/+$/g, '');
 }
+
+export function formatByteSize(size) {
+  const sizeMap = {
+    0: 'B',
+    1: 'KB',
+    2: 'MB',
+    3: 'GB',
+    4: 'TB',
+    5: 'PB'
+  };
+
+  let computedSize = size;
+  for (let modifier = 0; modifier < 5; modifier++) {
+    if (computedSize < 2048) {
+      return `${computedSize} ${sizeMap[modifier]}`;
+    }
+    computedSize = Math.floor(computedSize / 102.4) / 10;
+  }
+
+  return 'Too Large';
+}

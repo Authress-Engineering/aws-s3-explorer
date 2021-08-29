@@ -30,13 +30,13 @@
                     <td>{{index + 1}}</td>
                     <td>{{o.key}}</td>
                     <td>{{o.lastModified}}</td>
-                    <td>{{o.class}}</td>
-                    <td>{{o.size}}B</td>
+                    <td>{{o.storageClass}}</td>
+                    <td>{{ formatByteSize(o.size) }}</td>
                     <td>
                       <span v-if="trash.objectStatus[o.key] === 'DENIED'" class="trasherror">Access Denied</span>
                       <span v-else-if="trash.objectStatus[o.key] === 'DELETED'" class="trashdeleted">Deleted</span>
                       <span v-else-if="trash.objectStatus[o.key]" class="trasherror">{{ trash.objectStatus[o.key] }}</span>
-                      <i v-else>n/a</i>
+                      <i v-else></i>
                     </td>
                   </tr>
                 </tbody>
@@ -63,7 +63,7 @@
 <script setup>
 import { reactive, onMounted, computed } from 'vue'
 import DEBUG from '../logger';
-import { path2short, isFolder } from '../converters';
+import { formatByteSize } from '../converters';
 import store from '../store';
 
 const trash = reactive({ title: null, trashing: false, objectStatus: {} });

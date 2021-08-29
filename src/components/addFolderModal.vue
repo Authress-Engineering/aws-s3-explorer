@@ -15,7 +15,7 @@
                     <p>Please enter the relative path of the S3 folder to add to the current directory of the selected bucket, for example folder01 or Lorem/Ipsum/Bacon.</p>
                     <span>Current Bucket: <strong>{{store.currentBucket}}</strong></span><br><br>
                     <div class="input-group bottom-marg-10">
-                      <span class="input-group-addon">{{store.currentDirectory}}</span>
+                      <span class="input-group-addon">{{store.currentDirectory || '(root)' }}</span>
                       <input name="folder" v-model="state.newFolderName" type="text" class="form-control" placeholder="folder" required="true" />
                     </div>
                   </div>
@@ -49,12 +49,14 @@ const state = reactive({ newFolderName: null });
 const addFolder = async () => {
   DEBUG.log('Adding new folder');
 
-  const ef = stripLeadTrailSlash(state.newFolderName);
-  const vpef = `${store.currentDirectory}${store.delimiter}${ef}`;
+  const sanitizedFolderName = state.newFolderName.trim();
+
+  const ef = stripLeadTrailSlash(sanitizedFolderName);
+  const vpef = `${store.currentDirectory || ''}${store.delimiter}${ef}`;
   const folder = stripLeadTrailSlash(vpef);
   DEBUG.log('Calculated folder:', folder);
 
-  if (store.objects.find(o => o.key === folder)) {
+  if (store.objects.find(o => o.key === folder && o.type === 'DIRECTORY')) {
     bootbox.alert(`Error: folder or object already exists at: ${folder}`);
     return;
   }
@@ -88,7 +90,7 @@ const addFolder = async () => {
     }
   }
 
-  store.objects.push({ key: `${store.currentDirectory}${store.delimiter}${state.newFolderName.split(store.delimiter)[0]}`, type: 'DIRECTORY' });
+  store.objects.push({ key: `${store.currentDirectory}${store.delimiter}${sanitizedFolderName.split(store.delimiter)[0]}`, type: 'DIRECTORY' });
   store.showAddFolder = false;
 };
 </script>

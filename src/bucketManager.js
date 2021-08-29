@@ -24,14 +24,14 @@ export async function fetchBucketObjects() {
   const params = {
     Bucket: store.currentBucket,
     Delimiter: store.delimiter,
-    Prefix: store.currentDirectory ? `${store.currentDirectory}/` : undefined,
+    Prefix: store.currentDirectory ? (store.currentDirectory !== store.delimiter ? `${store.currentDirectory}/` : store.currentDirectory) : undefined,
     RequestPayer: 'requester'
   };
   let resultList;
   while (params.ContinuationToken || !resultList) {
     const result = await s3Client.listObjectsV2(params).promise();
     resultList = (resultList || []).concat(result.CommonPrefixes.map(object => ({
-      key: object.Prefix.slice(0, -1),
+      key: object.Prefix.slice(0, -1) || store.delimiter,
       type: 'DIRECTORY'
     }))).concat(result.Contents.map(object => ({
       key: object.Key,

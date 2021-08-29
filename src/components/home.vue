@@ -37,7 +37,7 @@
             <div class="btn-group d-flex">
               <div v-if="store.currentBucket && store.tokens">
                 <span style="cursor: pointer;" class="btn fa fa-folder-plus fa-2x" @click="store.showAddFolder = true" title="New folder" />
-                <span style="cursor: pointer;" class="btn fa fa-cloud-upload-alt fa-2x" @click="upload()" title="Upload files" />
+                <span style="cursor: pointer;" class="btn fa fa-cloud-upload-alt fa-2x" @click="store.showUploads = true" title="Upload files" />
                 
                 <span v-if="!selectedKeysCount" style="cursor: pointer;" class="btn fa fa-trash-alt fa-2x" disabled title="Delete objects"/>
                 <span v-else style="cursor: pointer;" class="btn fa fa-trash-alt fa-2x" :title="`Delete ${selectedKeysCount} selected object(s)`" @click="store.showTrash = true" />
@@ -53,8 +53,8 @@
 
           <div v-if="store.tokens && store.currentBucket">
             <div>
-              <span><a href="#" @click="exploreDirectory(null)">{{ store.currentBucket }}</a>
-              </span> / <span v-for="(part, partIndex) in pathParts" :key="part">
+              <span><a href="#" @click="exploreDirectory(null)">{{ store.currentBucket }}</a></span> /
+              <span v-for="(part, partIndex) in pathParts" :key="part">
                 <a :href="`#path=${pathParts.slice(0, partIndex + 1).join(store.delimiter)}`" @click="exploreDirectory(pathParts.slice(0, partIndex + 1).join(store.delimiter))">{{ part }}</a> /
                 </span>
             </div>
@@ -65,7 +65,9 @@
           <table class="table table-bordered table-hover table-striped" style="width:100%;" id="s3objects-table">
             <thead>
               <tr>
-                <th class="text-center">Select</th>
+                <th class="text-center" style="text-align: center; cursor: pointer" @click="selectAllObjects">
+                  <input type="checkbox" v-model="state.globalSelect" @click="selectAllObjects">
+                </th>
                 <th>Object</th>
                 <th>Last Modified</th>
                 <th>Class</th>
@@ -80,7 +82,7 @@
                 </td> -->
                 <td></td>
                 <td><i class="fas fa-folder" style="margin-right: 1rem" /><a :href="`#path=${path.key}`" @click="exploreDirectory(path.key)">
-                  {{ path.key.split(store.delimiter).slice(-1)[0] }}</a>
+                  {{ path.key.split(store.delimiter).slice(-1)[0] || store.delimiter }}</a>
                 </td>
                 <td style="text-align: center"></td>
                 <td style="text-align: center"></td>
@@ -93,7 +95,7 @@
                 <td>{{ path.key.split(store.delimiter).slice(-1)[0] || '(marker)' }}</td>
                 <td style="text-align: center">{{ path.lastModified }}</td>
                 <td style="text-align: center">{{ path.storageClass }}</td>
-                <td style="text-align: center">{{ path.size }}B</td>
+                <td style="text-align: center">{{ formatByteSize(path.size) }}</td>
               </tr>
             </tbody>
           </table>
@@ -106,6 +108,7 @@
       <SettingsModal v-if="store.showSettings" />
       <BucketSelectorModal v-if="store.showBucketSelector" />
       <AddFolderModal v-if="store.showAddFolder" />
+      <!-- <UploadModal v-if="store.showUploads" /> -->
       <TrashModal v-if="store.showTrash" :selectedKeys="Object.keys(state.selectedKeys)" />
     </div>
 
@@ -122,12 +125,14 @@ import SettingsModal from './settingsModal.vue';
 import BucketSelectorModal from './bucketSelectorModal.vue';
 import AddFolderModal from './addFolderModal.vue';
 import TrashModal from './trashModal.vue';
+// import UploadModal from './uploadModal.vue';
 import PoweredBy from './poweredBy.vue';
 
 import { login } from '../awsUtilities';
+import { formatByteSize } from '../converters';
 import { fetchBucketObjects } from '../bucketManager';
 
-const state = reactive({ objectCount: 0, selectedKeys: {} });
+const state = reactive({ objectCount: 0, selectedKeys: {}, globalSelect: false });
 
 const refresh = async () => {
   try {
@@ -182,7 +187,19 @@ const exploreDirectory = async directory => {
 
 const sortedObjects = computed(() => store.objects.sort((a, b) => a.key.localeCompare(b.key)));
 const selectedKeysCount = computed(() => Object.keys(state.selectedKeys).filter(key => !store.deletedObjects[key] && state.selectedKeys[key]).length);
-const pathParts = computed(() => store.currentDirectory && store.currentDirectory.split(store.delimiter));
+
+const selectAllObjects = async () => {
+  sortedObjects.value.forEach(o => {
+    state.selectedKeys[o.key] = !state.globalSelect;
+  });
+};
+
+const pathParts = computed(() => {
+  if (store.currentDirectory === store.delimiter) {
+    return [store.currentDirectory];
+  }
+  return store.currentDirectory && store.currentDirectory.split(store.delimiter) || [];
+});
 
 watch(sortedObjects, async (newSortedObjects, previouslySortedObjects) => {
   if (store.currentDirectory && previouslySortedObjects.length && !newSortedObjects.length) {

@@ -21,6 +21,7 @@ const store = reactive(Object.assign({
   showSettings: false,
   showAddFolder: false,
   showTrash: false,
+  showUploads: false,
   deletedObjects: {}
 }));
 
