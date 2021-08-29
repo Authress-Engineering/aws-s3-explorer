@@ -16,15 +16,19 @@ watch(currentBucket, () => {
 });
 
 export async function fetchBucketObjects() {
+  store.objects = await fetchBucketObjectsExplicit(store.currentDirectory);
+}
+
+export async function fetchBucketObjectsExplicit(directory) {
   if (!store.currentBucket) {
-    return;
+    return [];
   }
 
   const s3Client = new AWS.S3({ maxRetries: 0, region: store.region });
   const params = {
     Bucket: store.currentBucket,
     Delimiter: store.delimiter,
-    Prefix: store.currentDirectory ? (store.currentDirectory !== store.delimiter ? `${store.currentDirectory}/` : store.currentDirectory) : undefined,
+    Prefix: directory ? (directory !== store.delimiter ? `${directory}/` : directory) : undefined,
     RequestPayer: 'requester'
   };
   let resultList;
@@ -41,55 +45,8 @@ export async function fetchBucketObjects() {
       type: 'PATH'
     })));
     params.ContinuationToken = result.NextContinuationToken;
-    store.objects = resultList;
   }
-}
-
-export function trashObjects() {
-  DEBUG.log('Trash:', store.keys_selected);
-  if (store.keys_selected.length > 0) {
-    for (let ii = 0; ii < store.keys_selected.length; ii++) {
-      const obj = store.keys_selected[ii];
-      DEBUG.log('Object to be deleted:', obj);
-
-      const object = path2short(isFolder(obj.Key)
-        ? prefix2folder(obj.Key)
-        : fullpath2filename(obj.Key));
-
-      const folder = path2short(isFolder(obj.Key)
-        ? prefix2parentfolder(obj.Key)
-        : fullpath2pathname(obj.Key));
-
-      const lastmodified = isFolder(obj.Key)
-        ? ''
-        : moment(obj.LastModified).fromNow();
-
-      const timestamp = obj.LastModified
-        ? moment(obj.LastModified).local().format('YYYY-MM-DD HH:mm:ss')
-        : '';
-
-      const objectclass = isFolder(obj.Key)
-        ? ''
-        : store.s3StorageClasses[obj.StorageClass];
-
-      const size = isFolder(obj.Key)
-        ? ''
-        : bytesToSize(obj.Size);
-
-      // Open modal and trash these things
-      const trashObject = {
-        object,
-        folder,
-        lastmodified,
-        timestamp,
-        objectclass,
-        size
-      };
-
-      // eslint-disable-next-line no-console
-      console.error('**** open modal to trash these', trashObject);
-    }
-  }
+  return resultList;
 }
 
 export async function validateConfiguration(bucket) {

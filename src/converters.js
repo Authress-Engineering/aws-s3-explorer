@@ -85,6 +85,8 @@ export function stripLeadTrailSlash(s) {
 }
 
 export function formatByteSize(size) {
+  if (!size) { return ''; }
+
   const sizeMap = {
     0: 'B',
     1: 'KB',

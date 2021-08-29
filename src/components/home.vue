@@ -65,8 +65,8 @@
           <table class="table table-bordered table-hover table-striped" style="width:100%;" id="s3objects-table">
             <thead>
               <tr>
-                <th class="text-center" style="text-align: center; cursor: pointer" @click="selectAllObjects">
-                  <input type="checkbox" v-model="state.globalSelect" @click="selectAllObjects">
+                <th class="text-center" style="text-align: center; cursor: pointer" @click="state.globalSelect = !state.globalSelect">
+                  <input type="checkbox" v-model="state.globalSelect">
                 </th>
                 <th>Object</th>
                 <th>Last Modified</th>
@@ -76,11 +76,9 @@
             </thead>
             <tbody>
               <tr v-for="path in sortedObjects.filter(o => o.type === 'DIRECTORY')" :key="path.key">
-                <!-- TODO: enable recursive deletes -->
-                <!-- <td style="text-align: center; cursor: pointer" @click="() => state.selectedKeys[path.key] = !state.selectedKeys[path.key]">
+                <td style="text-align: center; cursor: pointer" @click="() => state.selectedKeys[path.key] = !state.selectedKeys[path.key]">
                   <input type="checkbox" v-model="state.selectedKeys[path.key]">
-                </td> -->
-                <td></td>
+                </td>
                 <td><i class="fas fa-folder" style="margin-right: 1rem" /><a :href="`#path=${path.key}`" @click="exploreDirectory(path.key)">
                   {{ path.key.split(store.delimiter).slice(-1)[0] || store.delimiter }}</a>
                 </td>
@@ -109,7 +107,7 @@
       <BucketSelectorModal v-if="store.showBucketSelector" />
       <AddFolderModal v-if="store.showAddFolder" />
       <!-- <UploadModal v-if="store.showUploads" /> -->
-      <TrashModal v-if="store.showTrash" :selectedKeys="Object.keys(state.selectedKeys)" />
+      <TrashModal v-if="store.showTrash" :selectedKeys="Object.keys(state.selectedKeys).filter(k => state.selectedKeys[k])" />
     </div>
 
     <PoweredBy />
@@ -189,12 +187,6 @@ const exploreDirectory = async directory => {
 const sortedObjects = computed(() => store.objects.sort((a, b) => a.key.localeCompare(b.key)));
 const selectedKeysCount = computed(() => Object.keys(state.selectedKeys).filter(key => !store.deletedObjects[key] && state.selectedKeys[key]).length);
 
-const selectAllObjects = async () => {
-  sortedObjects.value.forEach(o => {
-    state.selectedKeys[o.key] = !state.globalSelect;
-  });
-};
-
 const pathParts = computed(() => {
   if (store.currentDirectory === store.delimiter) {
     return [store.currentDirectory];
@@ -206,6 +198,14 @@ watch(sortedObjects, async (newSortedObjects, previouslySortedObjects) => {
   if (store.currentDirectory && previouslySortedObjects.length && !newSortedObjects.length) {
     await exploreDirectory(store.currentDirectory.split(store.delimiter).slice(0, -1).join(store.delimiter));
   }
+});
+
+const globalSelectWatcher = computed(() => state.globalSelect);
+
+watch(globalSelectWatcher, newValue => {
+  sortedObjects.value.forEach(o => {
+    state.selectedKeys[o.key] = newValue;
+  });
 });
 </script>
 
