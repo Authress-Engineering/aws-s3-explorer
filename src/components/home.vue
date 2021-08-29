@@ -181,6 +181,7 @@ onMounted(async () => {
 
 const exploreDirectory = async directory => {
   state.selectedKeys = {};
+  state.globalSelect = false;
   store.currentDirectory = directory;
   await fetchBucketObjects();
 };
