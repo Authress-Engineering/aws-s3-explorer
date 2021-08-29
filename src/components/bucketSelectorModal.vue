@@ -92,7 +92,7 @@ const newBucketEntered = newBucket => {
   bucketSelected(newBucket);
 };
 
-const bucketSelected = async bucket => {
+const bucketSelected = async (bucket, skipClose) => {
   state.showError = null;
   try {
     await validateConfiguration(bucket);
@@ -110,12 +110,14 @@ const bucketSelected = async bucket => {
     DEBUG.log('Failed to look up information about the bucket', configurationError);
   }
 
-  store.showBucketSelector = false;
+  if (!skipClose) {
+    store.showBucketSelector = false;
+  }
 };
 
 onMounted(async () => {
   if (store.currentBucket) {
-    await bucketSelected(store.currentBucket);
+    await bucketSelected(store.currentBucket, true);
   }
 });
 

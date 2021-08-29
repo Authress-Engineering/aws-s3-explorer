@@ -103,8 +103,8 @@ table.dataTable tbody tr {
 .modal-dialog {
     display: block;
     position: fixed;
-    margin: 5% auto;
-    top: 5%;
+    margin: 2.5% auto;
+    top: 0;
     right: 0;
     left: 0;
 }
@@ -118,6 +118,12 @@ table.dataTable tbody tr {
 
 .modal-header button.close {
     color: #FFFFFF;
+}
+
+.modal-body {
+    max-height: 80vh;
+    min-height: 25vh;
+    overflow-y: auto;
 }
 
 .alert table {

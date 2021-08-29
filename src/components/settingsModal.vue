@@ -17,9 +17,9 @@
                   <div>
                     Login Domain Url: <input name="Login Domain URL" v-model="store.applicationLoginUrl" type="text" class="form-control" placeholder="https://domain.auth.eu-west-1.amazoncognito.com" required="true" style="margin-right: 1rem" />
                     <br>
-                    Client ID: <input name="Application Client ID" v-model="store.applicationClientId" type="text" class="form-control" placeholder="4altof0dlefqqicdifb8tv4mjp" required="true" style="margin-right: 1rem" />
+                    Client ID: <input name="Application Client ID" v-model="store.applicationClientId" type="text" class="form-control" placeholder="4altoao354oiddqicdifb8tv4mjp" required="true" style="margin-right: 1rem" />
                     <br>
-                    Identity Pool ID: <input name="Cognito Identity Pool" v-model="store.identityPoolId" type="text" class="form-control" placeholder="eu-west-1:3b921bfd-4443-4a62-ba15-24efbe3b2a05" required="true" style="margin-right: 1rem" />
+                    Identity Pool ID: <input name="Cognito Identity Pool" v-model="store.identityPoolId" type="text" class="form-control" placeholder="eu-west-1:3b921bfd-4443-4a62-ba15-000000000000" required="true" style="margin-right: 1rem" />
                     <br>
                     <button type="submit" class="btn btn-primary" :disabled="!store.applicationLoginUrl || !store.applicationClientId || !store.identityPoolId" @click="cognitoLogin"><i class='fas fa-sign-in-alt'></i> Login</button>
                   </div>
