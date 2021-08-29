@@ -2,7 +2,7 @@
   <div>
     <div class="modal-dialog">
       <div class="modal-content">
-        <form name="settings_form">
+        <form @submit.prevent="cognitoLogin()">
           <div>
             <div class="modal-header">
               <h4 class="modal-title">S3 Explorer: Settings</h4>
@@ -21,7 +21,7 @@
                     <br>
                     Identity Pool ID: <input name="Cognito Identity Pool" v-model="store.identityPoolId" type="text" class="form-control" placeholder="eu-west-1:3b921bfd-4443-4a62-ba15-000000000000" required="true" style="margin-right: 1rem" />
                     <br>
-                    <button type="submit" class="btn btn-primary" :disabled="!store.applicationLoginUrl || !store.applicationClientId || !store.identityPoolId" @click="cognitoLogin"><i class='fas fa-sign-in-alt'></i> Login</button>
+                    <button type="submit" class="btn btn-primary" :disabled="!store.applicationLoginUrl || !store.applicationClientId || !store.identityPoolId"><i class='fas fa-sign-in-alt'></i> Login</button>
                   </div>
                   <hr>
                   

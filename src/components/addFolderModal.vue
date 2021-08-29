@@ -2,7 +2,7 @@
   <div id="AddFolderModal" tabindex="-1">
     <div class="modal-dialog">
       <div class="modal-content">
-        <div>
+        <form @submit.prevent="addFolder();">
           <div>
             <div class="modal-header">
               <button type="button" class="close" @click="store.showAddFolder = false" aria-hidden="true">&times;</button>
@@ -26,12 +26,12 @@
               <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-10">
                   <button type="button" class="btn btn-default" @click="store.showAddFolder = false">Cancel</button>
-                  <button type="submit" @click="addFolder()" :disabled="!state.newFolderName" class="btn btn-primary"><i class='fa fa-folder-plus fa-lg'></i>&nbsp;Add Folder</button>
+                  <button type="submit" :disabled="!state.newFolderName" class="btn btn-primary"><i class='fa fa-folder-plus fa-lg'></i>&nbsp;Add Folder</button>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   </div>
@@ -47,14 +47,14 @@ import { stripLeadTrailSlash } from '../converters';
 const state = reactive({ newFolderName: null });
 
 const addFolder = async () => {
-  DEBUG.log('Adding new folder');
+  DEBUG.log('Adding new directory');
 
   const sanitizedFolderName = state.newFolderName.trim();
 
   const ef = stripLeadTrailSlash(sanitizedFolderName);
   const vpef = `${store.currentDirectory || ''}${store.delimiter}${ef}`;
   const folder = stripLeadTrailSlash(vpef);
-  DEBUG.log('Calculated folder:', folder);
+  DEBUG.log('Calculated directory:', folder);
 
   if (store.objects.find(o => o.key === folder && o.type === 'DIRECTORY')) {
     bootbox.alert(`Error: folder or object already exists at: ${folder}`);
@@ -64,15 +64,14 @@ const addFolder = async () => {
   const s3client = new AWS.S3(AWS.config);
   const params = { Bucket: store.currentBucket, Key: `${folder}${store.delimiter}` };
 
-  DEBUG.log('Invoke headObject:', params);
-
   // Test if an object with this key already exists
   try {
     await s3client.headObject(params).promise();
+    DEBUG.log('Directory already exists, skipping creation');
   } catch (err1) {
     if (!err1) {
-      bootbox.alert(`Error: folder or object already exists at: ${folder}`);
-    return;
+      bootbox.alert(`Error: directory or object already exists at: ${folder}`);
+      return;
     }
 
     if (err1 && err1.code !== 'NotFound') {
