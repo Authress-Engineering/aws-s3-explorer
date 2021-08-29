@@ -12,12 +12,13 @@
                 <h2>Welcome to the AWS S3 Explorer</h2>
                 <div class="" style="width: 100%;">
                   <div>
-                    Specify the Cognito User Pool login url and clientId
+                    Specify the following Cognito configuration:
                   </div>
+                  <br>
                   <div>
-                    Login Domain Url: <input name="Login Domain URL" v-model="store.applicationLoginUrl" type="text" class="form-control" placeholder="https://domain.auth.eu-west-1.amazoncognito.com" required="true" style="margin-right: 1rem" />
+                    Cognito Hosted Login Domain URL: <input name="Login Domain URL" v-model="store.applicationLoginUrl" type="text" class="form-control" placeholder="https://domain.auth.eu-west-1.amazoncognito.com" required="true" style="margin-right: 1rem" />
                     <br>
-                    Client ID: <input name="Application Client ID" v-model="store.applicationClientId" type="text" class="form-control" placeholder="4altoao354oiddqicdifb8tv4mjp" required="true" style="margin-right: 1rem" />
+                    Cognito Application Client ID: <input name="Application Client ID" v-model="store.applicationClientId" type="text" class="form-control" placeholder="4altoao354oiddqicdifb8tv4mjp" required="true" style="margin-right: 1rem" />
                     <br>
                     Identity Pool ID: <input name="Cognito Identity Pool" v-model="store.identityPoolId" type="text" class="form-control" placeholder="eu-west-1:3b921bfd-4443-4a62-ba15-000000000000" required="true" style="margin-right: 1rem" />
                     <br>
