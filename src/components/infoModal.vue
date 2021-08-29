@@ -157,6 +157,5 @@ onMounted(() => {
 });
 
 const close = () => {
-  store.showBucketInfo = false;
 };
 </script>

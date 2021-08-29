@@ -47,6 +47,7 @@
                         Cognito Identity Pool:
                           <ul>
                             <li>Create an identity pool in the same region as the user pool</li>
+                            <li>Create a role which the pool can assume that has access to the relevant S3 resources.</li>
                             <li>Specify the Cognito Pool from the previous step as the Authentication Provider</li>
                           </ul>
                       </li>

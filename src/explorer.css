@@ -100,8 +100,13 @@ table.dataTable tbody tr {
     width: 700px;
 }
 
-.modal {
+.modal-dialog {
     display: block;
+    position: fixed;
+    margin: 5% auto;
+    top: 5%;
+    right: 0;
+    left: 0;
 }
 
 .modal-header {

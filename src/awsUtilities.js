@@ -8,8 +8,8 @@ export function correctClockSkew(Bucket) {
 
   // Head the bucket to get a Date response. The 'date' header will need
   // to be exposed in S3 CORS configuratio
-  const s3 = new AWS.S3({ region: store.region });
-  s3.headBucket({ Bucket }, (err, data) => {
+  const s3client = new AWS.S3({ region: store.region });
+  s3client.headBucket({ Bucket }, (err, data) => {
     if (err) {
       DEBUG.log('headBucket error:', err);
     } else {
@@ -91,6 +91,7 @@ export async function login() {
   }
 
   if (!store.applicationLoginUrl || !store.applicationClientId || !store.identityPoolId) {
+    store.showSettings = true;
     return;
   }
 
@@ -108,6 +109,7 @@ export async function login() {
   const codeChallenge = base64URLEncode(await sha256(codeVerifier));
   // redirect to login
   const redirectUri = `${window.location.origin}${window.location.pathname}`;
+  store.loggedOut = false;
   window.location = `${store.applicationLoginUrl}/oauth2/authorize?response_type=code&client_id=${store.applicationClientId}&state=${nonce}&code_challenge_method=S256&code_challenge=${codeChallenge}&redirect_uri=${redirectUri}`;
   await convertCredentialsToAWSCredentials();
 }
@@ -117,9 +119,14 @@ async function convertCredentialsToAWSCredentials() {
     return;
   }
 
+  store.region = store.identityPoolId.split(':')[0];
+
+  if (!store.tokens) {
+    return;
+  }
+
   try {
     const cognitoUserPoolId = jwtManager.decode(store.tokens.id_token).iss.split('/').slice(-1)[0];
-    store.region = store.identityPoolId.split(':')[0];
     AWS.config.region = store.region;
     AWS.config.credentials = new AWS.CognitoIdentityCredentials({
       IdentityPoolId: store.identityPoolId,

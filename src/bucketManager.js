@@ -1,9 +1,10 @@
 /* globals moment */
 
+import { DateTime } from 'luxon';
 import { watch, computed } from 'vue';
 import DEBUG from './logger';
 import store from './store';
-import { prefix2folder, fullpath2filename, path2short, isFolder, prefix2parentfolder, fullpath2pathname, bytesToSize } from './converts';
+import { prefix2folder, fullpath2filename, path2short, isFolder, prefix2parentfolder, fullpath2pathname, bytesToSize } from './converters';
 
 const currentBucket = computed({
   get() {
@@ -19,11 +20,11 @@ export async function fetchBucketObjects() {
     return;
   }
 
-  const s3Client = new AWS.S3({ region: store.region });
+  const s3Client = new AWS.S3({ maxRetries: 0, region: store.region });
   const params = {
     Bucket: store.currentBucket,
     Delimiter: store.delimiter,
-    Prefix: store.currentDirectory || undefined,
+    Prefix: store.currentDirectory ? `${store.currentDirectory}/` : undefined,
     RequestPayer: 'requester'
   };
   let resultList;
@@ -34,7 +35,7 @@ export async function fetchBucketObjects() {
       type: 'DIRECTORY'
     }))).concat(result.Contents.map(object => ({
       key: object.Key,
-      lastModified: object.LastModified,
+      lastModified: DateTime.fromJSDate(new Date(object.LastModified)).toFormat('DD TTT'),
       size: object.Size,
       storageClass: object.StorageClass,
       type: 'PATH'
@@ -92,7 +93,7 @@ export function trashObjects() {
 }
 
 export async function validateConfiguration(bucket) {
-  const s3Client = new AWS.S3({ maxRetries: 0 });
+  const s3Client = new AWS.S3({ maxRetries: 0, region: store.region });
   try {
     await s3Client.getBucketCors({ Bucket: bucket }).promise();
   } catch (err) {

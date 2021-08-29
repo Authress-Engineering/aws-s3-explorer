@@ -1,6 +1,4 @@
-import { reactive, watch } from 'vue';
-
-import DEBUG from './logger';
+import { reactive, watch, computed } from 'vue';
 
 const storedData = JSON.parse(localStorage.getItem('s3console') || '{}');
 
@@ -16,13 +14,14 @@ const store = reactive(Object.assign({
   identityPoolId: null,
   objects: [],
 
-  showSettings: false,
-  showBucketInfo: false,
-  showBucketSelector: false
+  loggedOut: false
 }, storedData, {
   initialized: false,
   showBucketSelector: false,
-  showBucketInfo: false
+  showSettings: false,
+  showAddFolder: false,
+  showTrash: false,
+  deletedObjects: {}
 }));
 
 watch(store, () => {
@@ -30,22 +29,12 @@ watch(store, () => {
   AWS.config.update({ region: store.region });
 });
 
+const currentBucket = computed(() => store.currentBucket);
+watch(currentBucket, () => {
+  store.deletedObjects = {};
+});
+
 export default store;
-
-export function changeViewPrefix(prefix) {
-  DEBUG.log('SharedService::changeViewPrefix');
-
-  if (store.delimiter) {
-    // Folder-level view
-    store.prefix = prefix;
-    store.view_prefix = null;
-    // TODO: what was going on here
-    // $.fn.dataTableExt.afnFiltering.length = 0;
-  } else {
-    // Bucket-level view
-    store.view_prefix = prefix;
-  }
-}
 
 export function getViewPrefix() { return store.view_prefix || store.prefix; }
 

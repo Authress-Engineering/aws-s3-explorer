@@ -15,7 +15,7 @@
                 <multiselect
                   v-model="store.currentBucket"
                   :options="store.rememberedBuckets.map(b => b.bucket)"
-                  placeholder=""
+                  placeholder="Select a bucket or enter a new one"
                   :showLabels="false" :allowEmpty="false" :taggable="true"
                   open-direction="bottom" :hideSelected="true"
                   :closeOnSelect="true" selectLabel="(press enter to select)" tag-placeholder="(press enter to select)"
@@ -113,12 +113,24 @@ const bucketSelected = async bucket => {
   store.showBucketSelector = false;
 };
 
+onMounted(async () => {
+  if (store.currentBucket) {
+    await bucketSelected(store.currentBucket);
+  }
+});
+
 </script>
 
 <style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
 
-<style>
-  .multiselect__option--selected.multiselect__option--highlight {
-    background: #41b883 !important;
+<style lang="scss">
+.multiselect__option--selected.multiselect__option--highlight {
+  background: #41b883 !important;
+}
+
+input.multiselect__input {
+  &::placeholder {
+    color: lightgrey !important;
   }
+}
 </style>
