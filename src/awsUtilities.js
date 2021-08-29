@@ -141,4 +141,4 @@ async function convertCredentialsToAWSCredentials() {
   } catch (error) {
     DEBUG.log('Failed to set credentials, following requests will not work due to the error:', error);
   }
-};
+}

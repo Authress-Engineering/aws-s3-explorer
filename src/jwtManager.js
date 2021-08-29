@@ -14,7 +14,7 @@ function decode(input) {
   }
 
   return atob(input);
-};
+}
 
 class JwtManager {
   decode(token) {

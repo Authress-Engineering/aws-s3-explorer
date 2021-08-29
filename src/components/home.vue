@@ -11,17 +11,17 @@
             <!-- Utility name -->
             <div class="title ">AWS S3 Explorer</div>
             <!-- Bucket breadcrumbs -->
-            <div class="" v-if="store.currentBucket" style="margin-right: 0.5rem;">
+            <div class="" v-if="store.tokens && store.currentBucket" style="margin-right: 0.5rem;">
               <button type="button" class="btn btn-default" @click="selectBucket">{{ store.currentBucket }}</button>
             </div>
 
-            <div v-else>
+            <div v-else-if="store.tokens">
               <button type="button" class="btn btn-default" @click="selectBucket">Select Bucket</button>
             </div>
                         
 
             <!-- Record count -->
-            <div v-if="store.currentBucket">
+            <div v-if="store.tokens && store.currentBucket">
               <div class="btn-group" v-if="selectedKeysCount === 0">
                 <span id="badgecount" style="cursor: default;" class="btn badge " title="Object count">{{store.objects.length}} {{ store.objects.length > 1 ? 'objects' : 'object' }}</span>
               </div>
@@ -35,7 +35,7 @@
           <!-- Folder/Bucket radio group and progress spinner -->
           <div id="navbuttons">
             <div class="btn-group d-flex">
-              <div v-if="store.currentBucket">
+              <div v-if="store.currentBucket && store.tokens">
                 <span style="cursor: pointer;" class="btn fa fa-folder-plus fa-2x" @click="store.showAddFolder = true" title="New folder" />
                 <span style="cursor: pointer;" class="btn fa fa-cloud-upload-alt fa-2x" @click="upload()" title="Upload files" />
                 
@@ -51,7 +51,7 @@
         <!-- Panel including S3 object table -->
         <div class="panel-body">
 
-          <div v-if="store.currentBucket">
+          <div v-if="store.tokens && store.currentBucket">
             <div>
               <span><a href="#" @click="exploreDirectory(null)">{{ store.currentBucket }}</a>
               </span> / <span v-for="(part, partIndex) in pathParts" :key="part">
@@ -139,12 +139,16 @@ const refresh = async () => {
 
 const logout = () => {
   DEBUG.log('Logging out');
-  store.tokens = null;
-  store.loggedOut = true;
-  store.objects = [];
-  const redirectUri = `${window.location.origin}${window.location.pathname}`;
-  window.location = `${store.applicationLoginUrl}/logout?client_id=${store.applicationClientId}&logout_uri=${redirectUri}`;
-  return;
+  if (store.tokens) {
+    store.tokens = null;
+    store.loggedOut = true;
+    store.objects = [];
+    const redirectUri = `${window.location.origin}${window.location.pathname}`;
+    window.location = `${store.applicationLoginUrl}/logout?client_id=${store.applicationClientId}&logout_uri=${redirectUri}`;
+    return;
+  }
+
+  store.showSettings = true;
 }
 
 const selectBucket = () => {
