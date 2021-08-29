@@ -1,5 +1,3 @@
-/* global AWS */
-
 import { createApp } from 'vue';
 
 import App from './App.vue';

@@ -10,6 +10,7 @@
     "node": true
   },
   "globals": {
+    "AWS": false,
     "globalThis": true
   },
   "rules": {
@@ -32,6 +33,7 @@
     "import/prefer-default-export": 0,
     "object-curly-newline": 0,
     "import/no-named-as-default-member": 0,
-    "comma-dangle": ["error", "never" ]
+    "comma-dangle": ["error", "never" ],
+    "no-await-in-loop": 0
   }
 }

@@ -34,7 +34,7 @@
                           <ul>
                             <li>Create a User Pool in any region (Not an identity pool)</li>
                             <li>Since we will use SSO, most of the configuration is irrelevant</li>
-                            <li><strong>General settings > Users and Groups > Groups</strong> > Update the auto generated group with a role that has access to the necessary buckets</li>
+                            <!-- <li><strong>General settings > Users and Groups > Groups</strong> > Update the auto generated group with a role that has access to the necessary buckets</li> -->
                             <li><strong>General settings > App clients</strong> > Add the S3 Console as an app</li>
                             <li><strong>Federation > Identity providers</strong> > Add your SSO provider of choice to the OAuth settings</li>
                             <li><strong>App Integration > App client settings</strong> > Enable identity provider just created</li>
@@ -48,7 +48,6 @@
                           <ul>
                             <li>Create an identity pool in the same region as the user pool</li>
                             <li>Specify the Cognito Pool from the previous step as the Authentication Provider</li>
-                            <li><strong>Unauthenticated identities:</strong> > Enable access to unauthenticated identities (You must enable this to work, unauthenticated users will not be allowed access, so it is not a security issue)</li>
                           </ul>
                       </li>
                       <li>Return here and enter the Cognito user pool login URL, ID, and identity pool ID above.</li>
@@ -101,124 +100,13 @@
 
 <script setup>
 import { reactive, onMounted } from 'vue'
-import { DateTime } from 'luxon';
 import DEBUG from '../logger';
 import store from '../store';
-import jwtManager from '../jwtManager';
+import { login } from '../awsUtilities';
 
 const state = reactive({ region: null });
 
-const sha256 = async (str) => {
-	return await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
-};
-
-const generateNonce = async () => {
-	const hash = await sha256(crypto.getRandomValues(new Uint32Array(4)).toString());
-	// https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
-	const hashArray = Array.from(new Uint8Array(hash));
-	return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-};
-
-const base64URLEncode = (string) => {
-	return btoa(String.fromCharCode.apply(null, new Uint8Array(string)))
-		.replace(/\+/g, "-")
-		.replace(/\//g, "_")
-		.replace(/=+$/, "")
-};
-
-const searchParams = new URL(location).searchParams;
-
 const cognitoLogin = async () => {
-  store.initialized = true;
-  if (store.tokens && DateTime.fromSeconds(jwtManager.decode(store.tokens.access_token).exp) > DateTime.utc()) {
-    await convertCredentialsToAWSCredentials();
-    store.showSettings = false;
-    return;
-  }
-
-  const code = searchParams.get("code");
-  if (code !== null) {
-    const newUrl = new URL(window.location);
-    newUrl.searchParams.delete('nonce');
-    newUrl.searchParams.delete('expires_in');
-    newUrl.searchParams.delete('access_token');
-    newUrl.searchParams.delete('id_token');
-    newUrl.searchParams.delete('state');
-    newUrl.searchParams.delete('code');
-    newUrl.searchParams.delete('iss');
-    history.replaceState({}, undefined, newUrl.toString());
-
-    const codeVerifier = localStorage.getItem('codeVerifier');
-    if (codeVerifier === null) {
-      throw new Error("Unexpected code");
-    }
-
-    const codeExchangeBody = Object.entries({
-      "grant_type": "authorization_code",
-      "client_id": store.applicationClientId,
-      "code": code,
-      "code_verifier": codeVerifier,
-      "redirect_uri": `${window.location.origin}${window.location.pathname}`,
-    }).map(([k, v]) => `${k}=${v}`).join("&");
-
-    const res = await fetch(`${store.applicationLoginUrl}/oauth2/token`, {
-      method: "POST",
-      headers: new Headers({"content-type": "application/x-www-form-urlencoded"}),
-      body: codeExchangeBody
-    });
-    if (!res.ok) {
-      throw new Error(await res.json());
-    }
-    const tokens = await res.json();
-    store.tokens = tokens;
-    await convertCredentialsToAWSCredentials();
-    store.showSettings = false;
-    return;
-  }
-
-  if (!store.applicationLoginUrl || !store.applicationClientId || !store.identityPoolId) {
-    return;
-  }
-
-  try {
-      new URL(store.applicationLoginUrl);
-    } catch (error) {
-      return;
-    }
-
-  // otherwise redirect login
-  const nonce = await generateNonce();
-	const codeVerifier = await generateNonce();
-	localStorage.setItem('codeVerifier', codeVerifier);
-	const codeChallenge = base64URLEncode(await sha256(codeVerifier));
-	// redirect to login
-  const redirectUri = `${window.location.origin}${window.location.pathname}`;
-	window.location = `${store.applicationLoginUrl}/oauth2/authorize?response_type=code&client_id=${store.applicationClientId}&state=${nonce}&code_challenge_method=S256&code_challenge=${codeChallenge}&redirect_uri=${redirectUri}`;
-  await convertCredentialsToAWSCredentials();
-};
-
-onMounted(() => {
-  if (!store.initialized) {
-    cognitoLogin();
-  }
-});
-
-const convertCredentialsToAWSCredentials = async () => {
-  if (!store.identityPoolId) {
-    return;
-  }
-
-  try { 
-    AWS.config.region = store.identityPoolId.split(':')[0];
-    AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-      IdentityPoolId: store.identityPoolId
-    });
-
-    DEBUG.log('Checking credentials');
-    const stsResult = await new AWS.STS().getCallerIdentity().promise();
-    DEBUG.log('AWS Credentials Set', stsResult);
-  } catch (error) {
-    DEBUG.log(`Failed to set credentials, following requests will not work due to the error:`, error);
-  }
+  login();
 };
 </script>

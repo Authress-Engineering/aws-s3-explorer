@@ -122,7 +122,7 @@ onMounted(() => {
   const params = { Bucket: store.currentBucket };
   DEBUG.log('call getBucketPolicy:', store.currentBucket);
 
-  const s3Client = new AWS.S3({ maxRetries: 0 });
+  const s3Client = new AWS.S3({ maxRetries: 0, region: store.region });
   s3Client.getBucketPolicy(params, (err, data) => {
     let text;
     if (err && err.code === 'NetworkingError') {
