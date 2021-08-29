@@ -139,10 +139,11 @@ const refresh = async () => {
 
 const logout = () => {
   DEBUG.log('Logging out');
+  store.loggedOut = true;
+    store.objects = [];
+
   if (store.tokens) {
     store.tokens = null;
-    store.loggedOut = true;
-    store.objects = [];
     const redirectUri = `${window.location.origin}${window.location.pathname}`;
     window.location = `${store.applicationLoginUrl}/logout?client_id=${store.applicationClientId}&logout_uri=${redirectUri}`;
     return;
