@@ -73,6 +73,8 @@ const props = defineProps({
   selectedKeys: Array
 });
 
+const emit = defineEmits(['trashCompleted']);
+
 onMounted(() => {
   store.deletedObjects = {};
 }); 
@@ -91,6 +93,7 @@ const objectsRemaining = computed(() => !Object.keys(trash.objectStatus).length 
 
 const closeModal = () => {
   store.objects = store.objects.filter(o => !store.deletedObjects[o.key]);
+  emit('trashCompleted');
   store.showTrash = false;
 }
 

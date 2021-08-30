@@ -50,7 +50,8 @@
             <div>
               <span><a href="#" @click="exploreDirectory(null)">{{ store.currentBucket }}</a></span>&nbsp;/&nbsp;
               <span v-for="(part, partIndex) in pathParts" :key="part">
-                <a :href="`#path=${pathParts.slice(0, partIndex + 1).join(store.delimiter)}`" @click="exploreDirectory(pathParts.slice(0, partIndex + 1).join(store.delimiter))">
+                <a :style="{ 'text-decoration': partIndex + 1 === pathParts.length ? 'none' : undefined, color: partIndex + 1 === pathParts.length ? 'unset' : undefined, cursor: partIndex + 1 === pathParts.length ? 'unset' : 'pointer' }"
+                  :href="`#path=${pathParts.slice(0, partIndex + 1).join(store.delimiter)}`" @click="exploreDirectory(pathParts.slice(0, partIndex + 1).join(store.delimiter))">
                   {{ part.length > 30 ? `${part.slice(0, 30)}…` : part }}
                 </a>&nbsp;/&nbsp;
               </span>
@@ -134,7 +135,7 @@
       <SettingsModal v-if="store.showSettings" />
       <BucketSelectorModal v-if="store.showBucketSelector" />
       <AddFolderModal v-if="store.showAddFolder" />
-      <TrashModal v-if="store.showTrash" :selectedKeys="Object.keys(state.selectedKeys).filter(k => state.selectedKeys[k])" />
+      <TrashModal v-if="store.showTrash" :selectedKeys="Object.keys(state.selectedKeys).filter(k => state.selectedKeys[k])" @trashCompleted="uploadsCompleted" />
       <UploadModal v-if="store.showUploads" :filesToUpload="state.filesToUpload" @uploadsCompleted="uploadsCompleted" />
     </div>
 
@@ -228,6 +229,7 @@ onMounted(async () => {
 
 const uploadsCompleted = () => {
   state.filesToUpload = [];
+  state.selectedKeys = {};
   fetchBucketObjects();
 };
 

@@ -1,5 +1,9 @@
 // Utility to convert bytes to readable text e.g. "2 KB" or "5 MB"
 export function formatByteSize(bytes) {
+  if (!bytes) {
+    return '';
+  }
+
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
   if (bytes === 0) {
     return '0 Bytes';
