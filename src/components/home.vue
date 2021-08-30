@@ -36,7 +36,6 @@
           <div id="navbuttons">
             <div class="btn-group d-flex">
               <div v-if="store.currentBucket && store.tokens">
-                <span style="cursor: pointer;" class="btn fa fa-cloud-upload-alt fa-2x" @click="store.showUploads = true" title="Upload files" />
                 <span style="cursor: pointer;" class="btn fa fa-sync fa-2x" :class="{ 'fa-spin': state.loading }" @click="refresh()" title="Refresh" />
               </div>
               <span style="cursor: pointer;" class="btn fa fa-sign-out-alt fa-2x" @click="logout()" title="Settings" />
@@ -111,7 +110,7 @@
       </div>
     </div>
 
-    <div class="panel panel-success" v-if="store.tokens && store.currentBucket">
+    <div class="panel panel-success" v-if="store.tokens && store.currentBucket" @click="store.showUploads = true" style="cursor: pointer">
       <div class="panel-heading" style="display: flex; direction: row; align-items: center; justify-content: space-between;">
 
         <div style="display: flex; direction: row; align-items: center">
@@ -136,7 +135,7 @@
       <BucketSelectorModal v-if="store.showBucketSelector" />
       <AddFolderModal v-if="store.showAddFolder" />
       <TrashModal v-if="store.showTrash" :selectedKeys="Object.keys(state.selectedKeys).filter(k => state.selectedKeys[k])" />
-      <UploadModal v-if="store.showUploads" />
+      <UploadModal v-if="store.showUploads" :filesToUpload="state.filesToUpload" @uploadsCompleted="uploadsCompleted" />
     </div>
 
     <div id="hiddenDropZoneList" style="display: none" />
@@ -162,7 +161,7 @@ import { login } from '../awsUtilities';
 import { formatByteSize } from '../converters';
 import { fetchBucketObjects, downloadObjects } from '../bucketManager';
 
-const state = reactive({ objectCount: 0, selectedKeys: {}, filesToUpload: {}, globalSelect: false });
+const state = reactive({ objectCount: 0, selectedKeys: {}, filesToUpload: [], globalSelect: false });
 
 const refresh = async () => {
   const spinnerAsync = new Promise(resolve => setTimeout(resolve, 1000));
@@ -221,37 +220,16 @@ onMounted(async () => {
     previewsContainer: '#hiddenDropZoneList'
   });
   myDropzone.on("addedfile", file => {
-    console.log('File added', file.name, file.fullPath, file.type, file.size);
-//     if (rejectReasons) {
-//       DEBUG.log('Failed loading these files:', rejectReasons);
-//     }
-
-//     return false;
-//     const files = await getFilesList(e.originalEvent.dataTransfer);
-//     if (!files.length) {
-//       DEBUG.log('Nothing to upload');
-//       return false;
-//     }
-
-//     upload.files = [];
-//     for (let ii = 0; ii < files.length; ii++) {
-//       const fileii = files[ii];
-
-//       // Only upload files, directories themselves can't be uploaded, because S3 doesn't have a notion of directories
-//       if (fileii.type || fileii.size % 4096 !== 0 || fileii.size > 1048576) {
-//         DEBUG.log('File:', fileii.name, 'Size:', fileii.size, 'Type:', fileii.type);
-
-//         upload.files.push({
-//           file: fileii,
-//           name: fileii.fullPath || fileii.name,
-//           type: fileii.type,
-//           size: bytesToSize(fileii.size),
-//           short: path2short(fileii.fullPath || fileii.name),
-//         });
-//       }
-//     }
+    console.log('File added', file.name, file.fullPath, file.size);
+    state.filesToUpload.push(file);
+    store.showUploads = true;
   });
 });
+
+const uploadsCompleted = () => {
+  state.filesToUpload = [];
+  fetchBucketObjects();
+};
 
 const exploreDirectory = async directory => {
   state.selectedKeys = {};

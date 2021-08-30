@@ -3,8 +3,8 @@
     <div class="modal-dialog modal-xl">
       <div class="modal-content">
         <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-          <h4 class="modal-title">Upload to:&nbsp;{{upload.title}}</h4>
+          <button type="button" class="close" aria-hidden="true" @click="closeUploads">&times;</button>
+          <h4 class="modal-title">Upload to: <strong>{{ store.currentDirectory }}</strong></h4>
         </div>
         <div class="modal-body">
           <div class="col-md-18">
@@ -23,19 +23,26 @@
                   </tr>
                 </thead>
                 <tbody id="upload-tbody">
-                  <tr v-for="(file, index) in upload.files" :key="file.short">
-                    <td>{{index + 1}}</td>
-                    <td>{{file.short}}</td>
-                    <td>{{file.type}}</td>
-                    <td>{{file.size}}</td>
-                    <td id="upload-td-{{index}}">
-                      <span id="upload-td-progress-{{index}}" class="progress-bar" data-percent="0"></span>
+                  <tr v-for="(file, index) in props.filesToUpload" :key="path2short(file.fullPath || file.name)">
+                    <td>{{ index + 1 }}</td>
+                    <td>{{ path2short(file.fullPath || file.name) }}</td>
+                    <td>{{ file.type }}</td>
+                    <td>{{ formatByteSize(file.size) }}</td>
+
+                    <td>
+                      <div v-if="!state.uploadStarted"></div>
+                      <div v-else-if="typeof state.completionPercentageMap[index] === 'number'" class="progress">
+                        <span class="progress-bar" :style="{ width: `${state.completionPercentageMap[index]}%` }">{{ state.completionPercentageMap[index] }}%</span>
+                      </div>
+                      <div v-else-if="state.completionPercentageMap[index] === 'DENIED'"><span class="progress-bar-danger">Access Denied</span></div>
+                      <div v-else-if="state.completionPercentageMap[index] === 'CANCELLED'"><span class="progress-bar-danger"></span></div>
+                      <div v-else-if="state.completionPercentageMap[index]"><span class="uploadError">{{ state.completionPercentageMap[index] }}</span></div>
                     </td>
                   </tr>
                 </tbody>
               </table>
               <p>
-              The selected files will be uploaded to {{upload.title}}
+              The selected files will be uploaded to {{ store.currentDirectory || '/' }}
               </p>
             </div>
           </div>
@@ -43,9 +50,9 @@
         <div class="modal-footer">
           <div class="form-group">
             <div class="col-sm-offset-2 col-sm-10">
-              <!-- <button id="upload-btn-cancel" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button> -->
-              <button id="upload-btn-cancel" type="button" @click="onCancel" class="btn btn-default">{{ upload.buttonText }}</button>
-              <button id="upload-btn-upload" type="submit" class="btn btn-primary" :disabled="upload.uploading"><i class="fa fa-cloud-upload-alt fa-lg"></i>&nbsp;{{ upload.button }}</button>
+              <button :disabled="state.status === 'IN_PROGRESS'" type="button" class="btn btn-default" @click="closeUploads">Close</button>
+              <button v-if="uploadButtonText" type="button" class="btn btn-primary" @click="uploadClicked"><i class="fa fa-cloud-upload-alt fa-lg"></i> {{ uploadButtonText }}
+              </button>
             </div>
           </div>
         </div>
@@ -56,100 +63,109 @@
 
 
 <script setup>
-import { reactive, onMounted } from 'vue'
+import { reactive, onMounted, computed } from 'vue'
+
+import { path2short, formatByteSize } from '../converters';
 import DEBUG from '../logger';
+import store from '../store';
 
-const upload = reactive({ });
+const props = defineProps({ filesToUpload: Array });
+const emit = defineEmits(['uploadsCompleted']);
 
-const uploadFiles = (Bucket, prefix) => {
-  $scope.$apply(() => {
-    upload.uploads = [];
-    upload.uploading = true;
+
+const state = reactive({ uploadStarted: false, completionPercentageMap: {} });
+let uploadHandlerMap = {};
+
+const allUploadsCompleted = computed(() => state.uploadStarted && Object.values(state.completionPercentageMap).every(v => v === 100));
+const status = computed(() => {
+  if (!state.uploadStarted) { return 'WAITING_FOR_APPROVAL'; }
+  if (allUploadsCompleted) { return 'FINISHED'; }
+  return 'IN_PROGRESS';
+});
+
+const uploadButtonText = computed(() => {
+  return {
+    'WAITING_FOR_APPROVAL': props.filesToUpload?.length === 1 ? `Upload 1 file` : `Upload ${props.filesToUpload?.length} files`,
+    'IN_PROGRESS': 'Cancel remaining uploads'
+  }[status.value]
+});
+
+const uploadClicked = () => {
+  if (!state.uploadStarted) {
+    return uploadFiles();
+  }
+
+  Object.keys(uploadHandlerMap).forEach(fileIndex => {
+    if (typeof state.completionPercentageMap[fileIndex] === 'number' && state.completionPercentageMap[fileIndex] < 100) {
+      uploadHandlerMap[fileIndex].abort();
+    }
   });
+};
 
-  DEBUG.log('Dropped files:', upload.files);
+const closeUploads = () => {
+  emit('uploadsCompleted');
+  store.showUploads = false;
+};
 
-  upload.files.forEach((file, ii) => {
-    DEBUG.log('File:', file);
-    DEBUG.log('Index:', ii);
+const uploadFiles = (prefix) => {
+  uploadHandlerMap = {};
+  state.uploadStarted = true;
 
-    $(`#upload-td-${ii}`).html(
-      `<div class="progress"><span id="upload-td-progress-${ii}" class="progress-bar" data-percent="0">0%</span></div>`,
-    );
+  props.filesToUpload.forEach((file, fileIndex) => {
+    DEBUG.log('Uploading file:', file);
 
-    const s3 = new AWS.S3(AWS.config);
-    const params = {
-      Body: file.file, Bucket, Key: (prefix || '') + (file.file.fullPath ? file.file.fullPath : file.file.name), ContentType: file.file.type,
-    };
+    const s3client = new AWS.S3({ region: store.region });
+    const params = { Bucket: store.currentBucket, Key: (store.currentDirectory || '') + (file.fullPath || file.name), ContentType: file.type, Body: file };
+    const uploadEventBus = s3client.upload(params);
+    uploadHandlerMap[fileIndex] = uploadEventBus;
 
-    const upl = s3.upload(params);
-    $scope.$apply(() => {
-      upload.uploads.push(upl);
-    });
+    state.completionPercentageMap[fileIndex] = 0;
 
-    const funcprogress = (evt) => {
+    const progressUpdatedHandler = (evt) => {
       DEBUG.log('File:', file, 'Part:', evt.part, evt.loaded, 'of', evt.total);
       const pc = evt.total ? ((evt.loaded * 100.0) / evt.total) : 0;
       const pct = Math.round(pc);
-      const pcts = `${pct}%`;
-      const col = $(`#upload-td-progress-${ii}`);
-      col.attr('data-percent', pct);
-      col.css('width', pcts).text(pcts);
+      state.completionPercentageMap[fileIndex] = 0;
     };
 
-    const funccancelled = (_file) => {
-      const col = $(`#upload-td-progress-${ii}`);
-      col.attr('data-percent', 100);
-      col.css('width', '100%').text('Cancelled');
-      col.addClass('progress-bar-danger');
-    };
-
-    const funcsend = (err, data) => {
+    const startUploadHandler = (err, data) => {
       if (err) {
         // AccessDenied is a normal consequence of lack of permission
         // and we do not treat this as completely unexpected
         if (err.code === 'AccessDenied') {
-          $(`#upload-td-${ii}`).html('<span class="uploaderror">Access Denied</span>');
+          DEBUG.log('Access Denied for upload:', file);
+          state.completionPercentageMap[fileIndex] = 'DENIED';
         } else if (err.code === 'RequestAbortedError') {
           DEBUG.log('Abort upload:', file);
-          funccancelled(file);
-          upload.cancelButtonText = 'Close';
+          state.completionPercentageMap[fileIndex] = 'CANCELLED';
         } else {
           DEBUG.log(JSON.stringify(err));
-          $(`#upload-td-${ii}`).html(`<span class="uploaderror">Failed:&nbsp${err.code}</span>`);
-          SharedService.showError(params, err);
+          state.completionPercentageMap[fileIndex] = `FAILED: ${err.code}`;
         }
       } else {
-        DEBUG.log('Uploaded', file.file.name, 'to', data.Location);
-        $(`#upload-td-progress-${ii}`).addClass('progress-bar-success');
-
-        $scope.$apply(() => {
-          upload.button = `Upload (${count})`;
-          upload.uploads = upload.uploads.filter(f => f !== upl);
-        });
-      }
-
-      // If all files complete then update buttons and refresh view
-      if (count === 0) {
-        upload.cancelButtonText = 'Close';
-        console.error('** Force a refresh everywhere');
+        DEBUG.log('Uploaded', file.name);
+        state.completionPercentageMap[fileIndex] = 100;
       }
     };
 
-    // Kick off the upload and report progress
-    upl.on('httpUploadProgress', funcprogress).send(funcsend);
+    uploadEventBus.on('httpUploadProgress', progressUpdatedHandler).send(startUploadHandler);
   });
 };
 
-const onCancel = (e2) => {
-    e2.preventDefault();
-
-    // If uploads still in progress then cancel them all
-    if (upload.uploads && upload.uploads.length > 0) {
-      console.log(`Cancel ${upload.uploads.length} uploads`);
-      upload.uploads.forEach(upl => upl.abort());
-    } else {
-      console.error('Close upload modal.');
-    }
-  };
 </script>
+
+<style lang="scss" scoped>
+.progress-bar-danger {
+  width: 100%;
+}
+
+
+.progress-bar {
+  min-width: 25px;
+  width: 0%;
+}
+
+.uploadError {
+  color: #AF0000;
+}
+</style>

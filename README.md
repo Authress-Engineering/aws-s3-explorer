@@ -37,4 +37,6 @@ Delete objects from a bucket succeeded:
 ## Contribution
 
 ### Development
-This project uses Vue 3, and as this is much different from Vue 2, [recommend reading is available](https://v3.vuejs.org/guide/computed.html).
+This project uses Vue 3, and as this is much different from Vue 2, recommend reading is available:
+* [General Updates](https://v3.vuejs.org/guide/computed.html)
+* [Script Setup tags](https://v3.vuejs.org/api/sfc-script-setup.html)

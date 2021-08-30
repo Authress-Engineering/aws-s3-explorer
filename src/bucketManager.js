@@ -3,7 +3,6 @@ import { watch, computed } from 'vue';
 import { saveAs } from 'file-saver';
 
 import store from './store';
-import DEBUG from './logger';
 
 const currentBucket = computed({
   get() {

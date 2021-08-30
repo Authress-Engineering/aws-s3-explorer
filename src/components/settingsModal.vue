@@ -116,19 +116,8 @@
                     </div> -->
                   </div>
                 </div>
-
-                <!-- <p><b>Bucket</b>: Please indicate which region and S3 bucket you want to explore.</p> -->
-                
               </div>
             </div>
-            <!-- <div class="modal-footer">
-              <div class="form-group">
-                <div class="col-sm-offset-2 col-sm-10">
-                  <button type="button" class="btn btn-default" @click="closeModal">Cancel</button>
-                  <button type="submit" class="btn btn-primary" @click="update"><i class='fa fa-cloud-download-alt fa-lg'></i>&nbsp;Query S3</button>
-                </div>
-              </div>
-            </div> -->
           </div>
         </form>
       </div>

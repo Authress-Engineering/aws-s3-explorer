@@ -1,9 +1,11 @@
 // Utility to convert bytes to readable text e.g. "2 KB" or "5 MB"
-export function bytesToSize(bytes) {
+export function formatByteSize(bytes) {
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-  if (bytes === 0) return '0 Bytes';
-  const ii = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)), 10);
-  return `${Math.round(bytes / (1024 ** ii), 2)} ${sizes[ii]}`;
+  if (bytes === 0) {
+    return '0 Bytes';
+  }
+  const exp = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)), 10);
+  return `${Math.round(bytes / (1024 ** exp), 2)} ${sizes[exp]}`;
 }
 
 // Escape strings of HTML
@@ -82,27 +84,4 @@ export function isFolder(path) {
 
 export function stripLeadTrailSlash(s) {
   return s.replace(/^\/+/g, '').replace(/\/+$/g, '');
-}
-
-export function formatByteSize(size) {
-  if (!size) { return ''; }
-
-  const sizeMap = {
-    0: 'B',
-    1: 'KB',
-    2: 'MB',
-    3: 'GB',
-    4: 'TB',
-    5: 'PB'
-  };
-
-  let computedSize = size;
-  for (let modifier = 0; modifier < 5; modifier++) {
-    if (computedSize < 2048) {
-      return `${computedSize} ${sizeMap[modifier]}`;
-    }
-    computedSize = Math.floor(computedSize / 102.4) / 10;
-  }
-
-  return 'Too Large';
 }
