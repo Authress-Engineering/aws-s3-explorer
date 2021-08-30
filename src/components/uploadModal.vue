@@ -107,7 +107,7 @@ const closeUploads = () => {
   store.showUploads = false;
 };
 
-const uploadFiles = (prefix) => {
+const uploadFiles = () => {
   uploadHandlerMap = {};
   state.uploadStarted = true;
 
@@ -115,7 +115,11 @@ const uploadFiles = (prefix) => {
     DEBUG.log('Uploading file:', file);
 
     const s3client = new AWS.S3({ region: store.region });
-    const params = { Bucket: store.currentBucket, Key: (store.currentDirectory || '') + (file.fullPath || file.name), ContentType: file.type, Body: file };
+    const params = {
+      Bucket: store.currentBucket,
+      Key: (store.currentDirectory && `${store.currentDirectory}${store.delimiter}` || '') + (file.fullPath || file.name),
+      ContentType: file.type, Body: file
+    };
     const uploadEventBus = s3client.upload(params);
     uploadHandlerMap[fileIndex] = uploadEventBus;
 
