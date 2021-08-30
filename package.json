@@ -22,10 +22,12 @@
   "mode": "production",
   "dependencies": {
     "@suadelabs/vue3-multiselect": "^1.0.2",
+    "dropzone": "^5.9.2",
+    "file-saver": "^2.0.5",
     "luxon": "^2.0.2",
     "vue": "^3.0.5",
     "vue-multiselect": "^2.1.6",
-    "vue3-table-lite": "^1.0.6"
+    "vue3-clipboard": "^1.0.0"
   },
   "scripts": {
     "build": "vite build",

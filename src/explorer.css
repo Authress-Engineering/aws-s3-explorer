@@ -62,23 +62,23 @@ td {
     margin-bottom: 0;
 }
 
-/*
-.dropzone {
-    border: 1px dashed #0088CC;
+
+/* .dropzone {
+    border: 2px dashed #0088CC;
     border-radius: 5px;
 }
-*/
+
 
 .dropzone.dragover {
-    /*border: 1px solid #0088CC;*/
-    /*border: 2px dashed #0088CC;*/
-    /*outline: 4px dashed #0088CC;*/
-    /*outline-radius: 5px;*/
+    border: 1px solid #0088CC;
+    border: 2px dashed #0088CC;
+    outline: 4px dashed #0088CC;
+    outline-radius: 5px;
     box-shadow: 0 0 3pt 2pt #0088CC;
-    /*border: 5px dashed #0088CC;*/
-    /*padding: 5px;*/
-    /*outline: 5px dashed #0088CC;*/
-}
+    border: 5px dashed #0088CC;
+    padding: 5px;
+    outline: 5px dashed #0088CC;
+} */
 
 #upload-tbody .progress {
   margin-bottom: 0;

@@ -122,8 +122,8 @@ onMounted(() => {
   const params = { Bucket: store.currentBucket };
   DEBUG.log('call getBucketPolicy:', store.currentBucket);
 
-  const s3Client = new AWS.S3({ maxRetries: 0, region: store.region });
-  s3Client.getBucketPolicy(params, (err, data) => {
+  const s3client = new AWS.S3({ maxRetries: 0, region: store.region });
+  s3client.getBucketPolicy(params, (err, data) => {
     let text;
     if (err && err.code === 'NetworkingError') {
       info.cors = 'This bucket does not have CORS enabled, preventing gathering information about it.';
@@ -139,7 +139,7 @@ onMounted(() => {
     }
   });
 
-  s3Client.getBucketCors(params, (err, data) => {
+  s3client.getBucketCors(params, (err, data) => {
     let text;
     if (err && err.code === 'NetworkingError') {
       info.cors = 'This bucket does not have CORS enabled.';

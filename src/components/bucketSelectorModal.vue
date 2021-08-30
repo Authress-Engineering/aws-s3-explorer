@@ -59,6 +59,14 @@
 
               </div>
             </div>
+
+            <div class="modal-footer">
+              <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                  <button type="button" class="btn btn-primary" @click="store.showBucketSelector = false">Close</button>
+                </div>
+              </div>
+            </div>
           </div>
         </form>
       </div>

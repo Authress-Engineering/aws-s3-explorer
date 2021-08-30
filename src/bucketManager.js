@@ -1,10 +1,9 @@
-/* globals moment */
-
 import { DateTime } from 'luxon';
 import { watch, computed } from 'vue';
-import DEBUG from './logger';
+import { saveAs } from 'file-saver';
+
 import store from './store';
-import { prefix2folder, fullpath2filename, path2short, isFolder, prefix2parentfolder, fullpath2pathname, bytesToSize } from './converters';
+import DEBUG from './logger';
 
 const currentBucket = computed({
   get() {
@@ -24,7 +23,7 @@ export async function fetchBucketObjectsExplicit(directory) {
     return [];
   }
 
-  const s3Client = new AWS.S3({ maxRetries: 0, region: store.region });
+  const s3client = new AWS.S3({ maxRetries: 0, region: store.region });
   const params = {
     Bucket: store.currentBucket,
     Delimiter: store.delimiter,
@@ -33,7 +32,7 @@ export async function fetchBucketObjectsExplicit(directory) {
   };
   let resultList;
   while (params.ContinuationToken || !resultList) {
-    const result = await s3Client.listObjectsV2(params).promise();
+    const result = await s3client.listObjectsV2(params).promise();
     resultList = (resultList || []).concat(result.CommonPrefixes.map(object => ({
       key: object.Prefix.slice(0, -1) || store.delimiter,
       type: 'DIRECTORY'
@@ -50,9 +49,9 @@ export async function fetchBucketObjectsExplicit(directory) {
 }
 
 export async function validateConfiguration(bucket) {
-  const s3Client = new AWS.S3({ maxRetries: 0, region: store.region });
+  const s3client = new AWS.S3({ maxRetries: 0, region: store.region });
   try {
-    await s3Client.getBucketCors({ Bucket: bucket }).promise();
+    await s3client.getBucketCors({ Bucket: bucket }).promise();
   } catch (err) {
     if (err && err.code === 'NetworkingError') {
       throw Error('CORS');
@@ -62,4 +61,24 @@ export async function validateConfiguration(bucket) {
     }
     throw err;
   }
+}
+
+export async function downloadObjects(bucket, keys) {
+  const s3client = new AWS.S3({ maxRetries: 0, region: store.rememberedBuckets.find(b => b.bucket === bucket).region || store.region });
+
+  await Promise.all(keys.map(async key => {
+    const params = { Bucket: bucket, Key: key, RequestPayer: 'requester' };
+    const result = await s3client.getObject(params).promise();
+    const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+    const match = filenameRegex.exec(result.ContentDisposition);
+    const filename = match && match[1].replace(/['"]/g, '') || key.split(store.delimiter).slice(-1)[0];
+    saveAs(new Blob([result.Body]), filename);
+
+    // try {
+    //   const url = s3client.getSignedUrl('getObject', { Bucket: bucket, Key: key, Expires: 3600 });
+    //   window.open(url, '_blank');
+    // } catch (error) {
+    //   DEBUG.log(`Error creating getObject file url: ${key}`, error);
+    // }
+  }));
 }

@@ -1,0 +1,318 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "S3 Explorer automation template",
+  "Parameters": {},
+
+  "Resources": {
+    "CognitoUserPool": {
+      "Type": "AWS::Cognito::UserPool",
+      "Properties": {
+        "AccountRecoverySetting": {
+          "RecoveryMechanisms": [
+            {
+              "Name": "admin_only",
+              "Priority": 1
+            }
+          ]
+        },
+        "AdminCreateUserConfig": {
+          "AllowAdminCreateUserOnly": true
+        },
+        "DeviceConfiguration": {
+          "ChallengeRequiredOnNewDevice": false
+        },
+        "Policies": {
+          "PasswordPolicy": {
+            "MinimumLength": 20,
+            "RequireLowercase": false,
+            "RequireNumbers": false,
+            "RequireSymbols": false,
+            "RequireUppercase": false,
+            "TemporaryPasswordValidityDays": 365
+          }
+        },
+        "UsernameConfiguration": {
+          "CaseSensitive": false
+        },
+        "UserPoolName": "S3 Explorer"
+      }
+    },
+
+    "S3ExplorerCognitoApplicationClient": {
+      "Type": "AWS::Cognito::UserPoolClient",
+      "Properties": {
+        "AccessTokenValidity": 24,
+        "AllowedOAuthFlows": ["code"],
+        "AllowedOAuthFlowsUserPoolClient": true,
+        "AllowedOAuthScopes": ["phone", "email", "openid", "profile", "aws.cognito.signin.user.admin"],
+        "CallbackURLs": [
+          "http://localhost:8080",
+          "http://localhost:8080/",
+          "https://console.rhosys.ch",
+          "https://console.rhosys.ch/",
+          "https://rhosys.github.io/aws-s3-explorer",
+          "https://rhosys.github.io/aws-s3-explorer/"
+        ],
+        "ClientName": "S3 Explorer UI",
+        "DefaultRedirectURI": "https://rhosys.github.io/aws-s3-explorer/",
+        "EnableTokenRevocation": true,
+        "ExplicitAuthFlows": ["ALLOW_REFRESH_TOKEN_AUTH"],
+        "GenerateSecret": false,
+        "IdTokenValidity": 24,
+        "LogoutURLs": [
+          "http://localhost:8080",
+          "http://localhost:8080/",
+          "https://console.rhosys.ch",
+          "https://console.rhosys.ch/",
+          "https://rhosys.github.io/aws-s3-explorer",
+          "https://rhosys.github.io/aws-s3-explorer/"
+        ],
+        "PreventUserExistenceErrors": "ENABLED",
+        "RefreshTokenValidity": 3650,
+        "UserPoolId": { "Ref": "CognitoUserPool" }
+      }
+    },
+
+    "CognitoLoginUiConfiguration": {
+      "Type": "AWS::Cognito::UserPoolDomain",
+      "Properties": {
+        "Domain": { "Fn::Sub": "${AWS::AccountId}-s3explorer" },
+        "UserPoolId": { "Ref": "CognitoUserPool" }
+      }
+    },
+
+    "CognitoIdentityPool": {
+      "Type": "AWS::Cognito::IdentityPool",
+      "Properties": {
+        "AllowUnauthenticatedIdentities": false,
+        "CognitoIdentityProviders": [
+          {
+            "ClientId": { "Ref": "S3ExplorerCognitoApplicationClient" },
+            "ProviderName": { "Fn::GetAtt": ["CognitoUserPool", "ProviderName"] },
+            "ServerSideTokenCheck": false
+          }
+        ],
+        "IdentityPoolName": "S3 Explorer"
+      }
+    },
+
+    "CognitoIdentityAuthenticatedRoleLink": {
+      "Type": "AWS::Cognito::IdentityPoolRoleAttachment",
+      "Properties": {
+        "IdentityPoolId": { "Ref": "CognitoIdentityPool" },
+        "Roles": {
+          "authenticated": { "Fn::GetAtt": ["AuthenticatedUserRoleForS3ExplorerUsers", "Arn"] }
+        }
+      }
+    },
+
+    "AuthenticatedUserRoleForS3ExplorerUsers": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "S3_Explorer_Authenticated_User",
+        "Path": "/",
+        "MaxSessionDuration": 43200,
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Federated": "cognito-identity.amazonaws.com"
+              },
+              "Action": "sts:AssumeRoleWithWebIdentity",
+              "Condition": {
+                "StringEquals": {
+                  "cognito-identity.amazonaws.com:aud": { "Ref": "CognitoIdentityPool" }
+                },
+                "ForAnyValue:StringLike": {
+                  "cognito-identity.amazonaws.com:amr": "authenticated"
+                }
+              }
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "FullAccessToS3Buckets",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Sid": "DynamoDbWrite",
+                  "Effect": "Allow",
+                  "Action": ["s3:*"],
+                  "Resource": ["*"]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+
+    "BucketForS3ExplorerSavedConfiguration": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": { "Fn::Sub": "s3-explorer.${AWS::AccountId}" },
+        "CorsConfiguration": {
+          "CorsRules": [
+            {
+              "AllowedHeaders": ["*"],
+              "AllowedMethods": ["PUT", "POST", "DELETE", "HEAD", "GET"],
+              "AllowedOrigins": ["http://localhost:8080", "https://console.rhosys.ch", "https://rhosys.github.io"],
+              "ExposedHeaders": ["x-amz-request-id"],
+              "MaxAge": 3600
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Service",
+            "Value": "S3 Explorer Configuration"
+          }
+        ]
+      }
+    },
+
+    "S3BucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": { "Fn::Sub": "s3-explorer.${AWS::AccountId}" },
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "Grant read access to S3 Explorer configuration to users.",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": "s3:GetObject",
+              "Resource": { "Fn::Sub": "arn:aws:s3:::s3-explorer.${AWS::AccountId}/*" }
+            }
+          ]
+        }
+      }
+    },
+
+    "S3CustomResource": {
+      "Type": "Custom::S3CustomResource",
+      "DependsOn": "AWSLambdaExecutionRole",
+      "Properties": {
+        "ServiceToken": { "Fn::GetAtt": ["AWSLambdaFunction", "Arn"] },
+        "BucketName": { "Ref": "BucketForS3ExplorerSavedConfiguration" },
+        "CognitoPoolId": { "Ref": "CognitoUserPool" },
+        "LoginUrl": { "Ref": "CognitoLoginUiConfiguration" },
+        "ApplicationClientId": { "Ref": "S3ExplorerCognitoApplicationClient" },
+        "IdentityPoolId": { "Ref": "CognitoIdentityPool" }
+      }
+    },
+    "AWSLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Description": "Loads S3 Explorer Configuration into bucket",
+        "FunctionName": { "Fn::Sub": "${AWS::StackName}-${AWS::Region}-lambda" },
+        "Handler": "index.handler",
+        "Role": { "Fn::GetAtt": ["AWSLambdaExecutionRole", "Arn"] },
+        "Timeout": 10,
+        "Runtime": "nodejs12.x",
+        "Code": {
+          "ZipFile": {
+            "Fn::Join": [
+              "\n",
+              [
+                "// http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-lambda-function-code.html",
+                "const aws = require('aws-sdk');",
+                "const cloudFormationResponseHandler = require('cfn-response');",
+                "exports.handler = function (event, context) {",
+                "  let bucketName = event.ResourceProperties.BucketName;",
+                "  let cognitoPoolId = event.ResourceProperties.CognitoPoolId;",
+                "  let applicationLoginUrl = event.ResourceProperties.LoginUrl;",
+                "  let applicationClientId = event.ResourceProperties.ApplicationClientId;",
+                "  let identityPoolId = event.ResourceProperties.IdentityPoolId;",
+                "  let s3client = new aws.S3();",
+                "  if (event.RequestType === 'Delete') { cloudFormationResponseHandler.send(event, context, cloudFormationResponseHandler.SUCCESS, { title: 'Skipping Delete' }); } ",
+                "  else {",
+                "    s3client.putObject({ Bucket: bucketName, Key: 'configuration.json', Body: Buffer.from(JSON.stringify({ cognitoPoolId, applicationLoginUrl, applicationClientId, identityPoolId })), ContentType: 'application/json' }).promise()",
+                "      .then(() => {",
+                "        return cloudFormationResponseHandler.send(event, context, cloudFormationResponseHandler.SUCCESS, { title: 'Configuration updated' });",
+                "      })",
+                "      .catch(error => {",
+                "        return cloudFormationResponseHandler.send(event, context, cloudFormationResponseHandler.FAILED, { title: 'Failed to write configuration', error: error.message || error.toString() || error });",
+                "      });",
+                "  }",
+                "}"
+              ]
+            ]
+          }
+        }
+      }
+    },
+
+    "AWSLambdaExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": ["sts:AssumeRole"],
+              "Effect": "Allow",
+              "Principal": {
+                "Service": ["lambda.amazonaws.com"]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"],
+                  "Effect": "Allow",
+                  "Resource": "arn:aws:logs:*:*:*"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "PolicyName": { "Fn::Sub": "${AWS::StackName}-${AWS::Region}-AWSLambda-CW" }
+          },
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": ["s3:PutObject"],
+                  "Effect": "Allow",
+                  "Resource": [{ "Fn::Sub": "arn:aws:s3:::${BucketForS3ExplorerSavedConfiguration}/configuration.json" }]
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "PolicyName": { "Fn::Sub": "${AWS::StackName}-${AWS::Region}-AWSLambda-S3" }
+          }
+        ],
+        "RoleName": { "Fn::Sub": "${AWS::StackName}-${AWS::Region}-AWSLambdaExecutionRole" }
+      }
+    }
+  },
+
+  "Outputs": {
+    "CognitoPoolId": {
+      "Description": "Cognito Pool ID",
+      "Value": { "Ref": "CognitoUserPool" }
+    },
+    "LoginUrl": {
+      "Description": "Login URL",
+      "Value": { "Ref": "CognitoLoginUiConfiguration" }
+    },
+    "ApplicationClientId": {
+      "Description": "Application Client ID",
+      "Value": { "Ref": "S3ExplorerCognitoApplicationClient" }
+    },
+    "IdentityPoolId": {
+      "Description": "Identity Pool ID",
+      "Value": { "Ref": "CognitoIdentityPool" }
+    }
+  }
+}

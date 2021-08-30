@@ -9,9 +9,13 @@ const store = reactive(Object.assign({
   currentBucket: null,
   rememberedBuckets: [],
   currentDirectory: null,
+
+  awsAccountId: null,
+  cognitoPoolId: null,
   applicationClientId: null,
   applicationLoginUrl: null,
   identityPoolId: null,
+
   objects: [],
 
   loggedOut: false

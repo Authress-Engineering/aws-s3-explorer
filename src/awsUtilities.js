@@ -90,7 +90,9 @@ export async function login() {
     return;
   }
 
+  DEBUG.log('Validating login parameters');
   if (!store.applicationLoginUrl || !store.applicationClientId || !store.identityPoolId) {
+    DEBUG.log('Missing required parameter for login', store.applicationClientId, store.applicationClientId, store.identityPoolId);
     store.showSettings = true;
     return;
   }
@@ -99,6 +101,7 @@ export async function login() {
     // eslint-disable-next-line no-new
     new URL(store.applicationLoginUrl);
   } catch (error) {
+    DEBUG.log('Invalid application login url:', store.applicationLoginUrl);
     return;
   }
 
