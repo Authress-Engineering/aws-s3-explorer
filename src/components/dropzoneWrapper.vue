@@ -1,7 +1,7 @@
 <template>
   <form id="dropzone" style="min-height: 100%">
     <div class="dropzoneWrapper" ref="root">
-      <div id="overlay" ref="overlay" :class="{ displayOverlay: state.overlayActive }">
+      <div id="overlay" :class="{ displayOverlay: state.overlayActive }">
         <div class="dropzoneOverlayText">
           <div class="text">
             <h2 class="title">Dropzone</h2>
