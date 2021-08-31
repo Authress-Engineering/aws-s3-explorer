@@ -9,7 +9,7 @@
           <!-- Bucket selection and breadcrumbs -->
           <div style="display: flex; direction: row; align-items: center">
             <!-- Utility name -->
-            <div class="title ">AWS S3 Explorer</div>
+            <div class="title">AWS S3 Explorer</div>
             <!-- Bucket breadcrumbs -->
             <div class="" v-if="store.tokens && store.currentBucket" style="margin-right: 0.5rem;">
               <button type="button" class="btn btn-default" @click="selectBucket">{{ store.currentBucket }}</button>
@@ -36,9 +36,10 @@
           <div id="navbuttons">
             <div class="btn-group d-flex">
               <div v-if="store.currentBucket && store.tokens">
-                <span style="cursor: pointer;" class="btn fa fa-sync fa-2x" :class="{ 'fa-spin': state.loading }" @click="refresh()" title="Refresh" />
+                <span style="cursor: pointer;" class="btn fa fa-sync fa-2x" :class="{ 'fa-spin': state.loading }" @click="refresh()" title="Reload the directory" />
               </div>
-              <span style="cursor: pointer;" class="btn fa fa-sign-out-alt fa-2x" @click="logout()" title="Settings" />
+              <span style="cursor: pointer;" class="btn fa fa-sign-out-alt fa-2x" @click="logout()" title="Logout" />
+              <span style="cursor: pointer;" class="btn fa" @click="openGithub()" title="Check out the source at Github.com"><img src="../assets/github-logo.svg" height="28"></span>
             </div>
           </div>
         </div>
@@ -71,7 +72,7 @@
 
           <br>
 
-          <table class="table table-bordered table-hover table-striped" style="width:100%;" id="s3objects-table">
+          <table v-if="store.tokens" class="table table-bordered table-hover table-striped" style="width:100%;" id="s3objects-table">
             <thead>
               <tr>
                 <th class="text-center" style="text-align: center; cursor: pointer" @click="state.globalSelect = !state.globalSelect">
@@ -176,8 +177,8 @@ const refresh = async () => {
 
 const logout = () => {
   DEBUG.log('Logging out');
+  store.objects = [];
   store.loggedOut = true;
-    store.objects = [];
 
   if (store.tokens) {
     store.tokens = null;
@@ -242,6 +243,8 @@ const pathParts = computed(() => {
   }
   return store.currentDirectory && store.currentDirectory.split(store.delimiter) || [];
 });
+
+const openGithub = () => { window.open('https://github.com/Rhosys/aws-s3-explorer#aws-s3-explorer', '_blank'); };
 
 watch(sortedObjects, async (newSortedObjects, previouslySortedObjects) => {
   if (store.currentDirectory && previouslySortedObjects.length && !newSortedObjects.length) {
