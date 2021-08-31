@@ -1,5 +1,5 @@
 <template>
-  <form id="dropzone">
+  <DropzoneWrapper @fileAdded="fileAdded">
     <div class="col-12" style="display: flex; flex-direction: column; flex-wrap: nowrap;">
       <div class="panel panel-primary" style="flex-grow: 1">
 
@@ -139,15 +139,12 @@
       <UploadModal v-if="store.showUploads" :filesToUpload="state.filesToUpload" @uploadsCompleted="uploadsCompleted" />
     </div>
 
-    <div id="hiddenDropZoneList" style="display: none" />
     <PoweredBy />
-  </form>
+  </DropzoneWrapper>
 </template>
 
 <script setup>
 import { reactive, onMounted, computed, watch } from 'vue'
-import Dropzone from 'dropzone';
-import "dropzone/dist/dropzone.css";
 
 import DEBUG from '../logger';
 import store from '../store';
@@ -157,6 +154,7 @@ import AddFolderModal from './addFolderModal.vue';
 import TrashModal from './trashModal.vue';
 import UploadModal from './uploadModal.vue';
 import PoweredBy from './poweredBy.vue';
+import DropzoneWrapper from './dropzoneWrapper.vue';
 
 import { login } from '../awsUtilities';
 import { formatByteSize } from '../converters';
@@ -211,21 +209,12 @@ onMounted(async () => {
       store.showBucketSelector = true;
     }
   }
-
-  // Make sure Dropzone doesn't try to attach itself to the element automatically. This behavior will change in future versions.
-  Dropzone.autoDiscover = false;
-  const myDropzone = new Dropzone('#dropzone', {
-    autoQueue: false,
-    autoProcessQueue: false,
-    url: "IGNORED",
-    previewsContainer: '#hiddenDropZoneList'
-  });
-  myDropzone.on("addedfile", file => {
-    console.log('File added', file.name, file.fullPath, file.size);
-    state.filesToUpload.push(file);
-    store.showUploads = true;
-  });
 });
+
+const fileAdded = file => {
+  state.filesToUpload.push(file);
+  store.showUploads = true;
+};
 
 const uploadsCompleted = () => {
   state.filesToUpload = [];

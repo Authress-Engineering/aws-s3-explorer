@@ -10,7 +10,7 @@
           <div class="col-md-18">
             <div class="panel-body">
               <p>
-              Please confirm that you want to upload the following files to S3.
+              Please confirm that you want to upload the following files to S3:
               </p>
               <table class="table table-bordered table-hover table-striped" id="upload-table">
                 <thead id="upload-thead">
@@ -42,8 +42,29 @@
                 </tbody>
               </table>
               <p>
-              The selected files will be uploaded to {{ store.currentDirectory || '/' }}
+              The selected files will be uploaded to:<br>
+                <strong>{{ store.currentBucket }} > {{ store.currentDirectory || store.delimiter }}</strong>
               </p>
+            </div>
+
+            <div v-if="!state.uploadStarted" class="panel panel-success" style="cursor: pointer">
+              <div class="panel-heading" style="display: flex; direction: row; align-items: center; justify-content: space-between;">
+
+                <div style="display: flex; direction: row; align-items: center">
+                  <div class="title ">Dropzone</div>
+                </div>
+              </div>
+
+
+              <div class="panel-body" style="overflow: auto; text-align: center">
+                Drag and drop files and folders you want to upload here.
+                <br><br>
+                <div class="text-muted">
+                  <strong>No files or folders</strong><br>
+                  You have not chosen any files or folders to upload.
+                </div>
+
+              </div>
             </div>
           </div>
         </div>

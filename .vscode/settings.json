@@ -18,6 +18,8 @@
     ],
     "files.exclude": {
         "**/lib": true,
-        "lib/*": true
+        "dist/**": true,
+        "lib/*": true,
+        "yarn-error.log": true
     }
 }
