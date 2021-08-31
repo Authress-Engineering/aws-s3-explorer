@@ -8,8 +8,12 @@
 
           <!-- Bucket selection and breadcrumbs -->
           <div style="display: flex; direction: row; align-items: center">
-            <!-- Utility name -->
-            <div class="title">AWS S3 Explorer</div>
+            <div class="title d-flex" style="align-items: center">
+              <div style="height: 30px; width: 30px; background: white; border-radius: 5px; margin-right: 1rem">
+                <img src="public/images/icons/bucket-logo-focused.png" height="30">
+              </div>
+              <h4>AWS S3 Explorer</h4>
+            </div>
             <!-- Bucket breadcrumbs -->
             <div class="" v-if="store.tokens && store.currentBucket" style="margin-right: 0.5rem;">
               <button type="button" class="btn btn-default" @click="selectBucket">{{ store.currentBucket }}</button>
@@ -58,13 +62,13 @@
               </span>
             </div>
             <div style="flex-shrink: 0; flex-grow: 1; display: flex; flex-direction: row; flex-wrap: no-wrap; justify-content: flex-end">
-              <button style="cursor: pointer; margin-left: 0.5rem" class="text-primary btn btn-xs btn-warning" :disabled="!selectedKeysCount" @click="downloadFiles" title="Download files">
+              <button type="button" style="cursor: pointer; margin-left: 0.5rem" class="text-primary btn btn-xs btn-warning" :disabled="!selectedKeysCount" @click="downloadFiles" title="Download files">
                 <i class="fa fa-cloud-download-alt" style="margin-right: 0.5rem" />Download
               </button>
-              <button style="cursor: pointer; margin-left: 0.5rem" class="text-primary btn btn-xs btn-primary" @click="store.showAddFolder = true" title="New folder">
+              <button type="button" style="cursor: pointer; margin-left: 0.5rem" class="text-primary btn btn-xs btn-primary" @click="store.showAddFolder = true" title="New folder">
                 <i class="fa fa-folder-plus" style="margin-right: 0.5rem" />New Folder
               </button>
-              <button style="cursor: pointer; margin-left: 0.5rem" class="text-primary btn btn-xs btn-danger" :disabled="!selectedKeysCount" @click="store.showTrash = true" title="Delete Objects">
+              <button type="button" style="cursor: pointer; margin-left: 0.5rem" class="text-primary btn btn-xs btn-danger" :disabled="!selectedKeysCount" @click="store.showTrash = true" title="Delete Objects">
                 <i class="fa fa-trash-alt" style="margin-right: 0.5rem" />Delete Objects
               </button>
             </div>

@@ -17,7 +17,7 @@ export async function fetchBucketObjects() {
   store.objects = await fetchBucketObjectsExplicit(store.currentDirectory);
 }
 
-export async function fetchBucketObjectsExplicit(directory) {
+export async function fetchBucketObjectsExplicit(directory, findAllMatching = false) {
   if (!store.currentBucket) {
     return [];
   }
@@ -25,7 +25,7 @@ export async function fetchBucketObjectsExplicit(directory) {
   const s3client = new AWS.S3({ maxRetries: 0, region: store.region });
   const params = {
     Bucket: store.currentBucket,
-    Delimiter: store.delimiter,
+    Delimiter: findAllMatching ? undefined : store.delimiter,
     Prefix: directory ? (directory !== store.delimiter ? `${directory}/` : directory) : undefined,
     RequestPayer: 'requester'
   };
@@ -65,13 +65,24 @@ export async function validateConfiguration(bucket) {
 export async function downloadObjects(bucket, keys) {
   const s3client = new AWS.S3({ maxRetries: 0, region: store.rememberedBuckets.find(b => b.bucket === bucket).region || store.region });
 
-  await Promise.all(keys.map(async key => {
+  const downloadObject = async key => {
     const params = { Bucket: bucket, Key: key, RequestPayer: 'requester' };
     const result = await s3client.getObject(params).promise();
     const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
     const match = filenameRegex.exec(result.ContentDisposition);
     const filename = match && match[1].replace(/['"]/g, '') || key.split(store.delimiter).slice(-1)[0];
     saveAs(new Blob([result.Body]), filename);
+  };
+
+  await Promise.all(keys.map(async key => {
+    const object = store.objects.find(o => o.key === key);
+    if (object.type !== 'DIRECTORY') {
+      return downloadObject(key);
+    }
+
+    const bucketObjects = await fetchBucketObjectsExplicit(key, true);
+    const additionalObjectKeys = bucketObjects.map(b => b.key);
+    await Promise.all(additionalObjectKeys.map(additionalKey => downloadObject(additionalKey)));
 
     // try {
     //   const url = s3client.getSignedUrl('getObject', { Bucket: bucket, Key: key, Expires: 3600 });
