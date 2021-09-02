@@ -35,7 +35,7 @@
     "build": "vite build",
     "start": "vite --port=8080",
     "serve": "vite preview --port=8080",
-    "lint": "eslint --ext .js src",
+    "lint": "eslint --ext .js src make.js",
     "setup": "node make.js setup",
     "after_build": "node make.js after_build",
     "test": "babel src -d lib && mocha -r esm tests/*.test.js"
@@ -43,6 +43,7 @@
   "devDependencies": {
     "@vitejs/plugin-vue": "^1.3.0",
     "@vue/compiler-sfc": "^3.0.5",
+    "aws-architect": "^6.5.714",
     "axios": "^0.21.1",
     "ci-build-tools": "^1.0.13",
     "commander": "^4.0.1",
