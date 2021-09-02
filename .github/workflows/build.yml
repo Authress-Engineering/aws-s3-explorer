@@ -24,12 +24,13 @@ jobs:
     - name: Run build
       run: yarn build
 
-    - name: After build
-      if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master'
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-      run: yarn after_build
+    # Disabled waiting for github to enable some way to verify tokens
+    # - name: After build
+    #   if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master'
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #     AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+    #   run: yarn after_build
     - name: Create Github Release and Tag
       if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master'
       run: |

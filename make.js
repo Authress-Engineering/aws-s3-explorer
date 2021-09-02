@@ -4,8 +4,8 @@ const axios = require('axios');
 const aws = require('aws-sdk');
 const commander = require('commander');
 const fs = require('fs-extra');
-// const path = require('path');
-// const AwsArchitect = require('aws-architect');
+const path = require('path');
+const AwsArchitect = require('aws-architect');
 // const githubActionsRunner = require('ci-build-tools')(process.env.GITHUB_TOKEN);
 
 aws.config.update({ region: 'eu-west-1' });
@@ -40,7 +40,7 @@ async function setupAWS() {
     console.log('Configured AWS Credentials', stsResult);
   } catch (error) {
     console.log('Failed to setup credentials', error);
-    // process.exit(1);
+    process.exit(1);
   }
 }
 
@@ -65,6 +65,9 @@ function getVersion() {
 const version = getVersion();
 commander.version(version);
 
+const packageMetadata = require('./package.json');
+packageMetadata.version = version;
+
 /**
   * Build
   */
@@ -72,11 +75,9 @@ commander
   .command('setup')
   .description('Setup require build files for npm package.')
   .action(async () => {
-    const package_metadata = require('./package.json');
-    package_metadata.version = version;
-    await fs.writeJson('./package.json', package_metadata, { spaces: 2 });
+    await fs.writeJson('./package.json', packageMetadata, { spaces: 2 });
 
-    console.log('Building package %s (%s)', package_metadata.name, version);
+    console.log('Building package %s (%s)', packageMetadata.name, version);
     console.log('');
   });
 
@@ -87,28 +88,27 @@ commander
   .command('after_build')
   .description('Publishes git tags and reports failures.')
   .action(async () => {
-    const package_metadata = require('./package.json');
-    console.log('After build package %s (%s)', package_metadata.name, version);
+    console.log('After build package %s (%s)', packageMetadata.name, version);
     console.log('');
     // githubActionsRunner.MergeDownstream('release/', 'main');
     await setupAWS();
 
-    // const apiOptions = {
-    //   deploymentBucket: 's3-explorer-public-data'
-    // };
+    const apiOptions = {
+      deploymentBucket: 's3-explorer-public-data'
+    };
     
-    // const contentOptions = {
-    //   bucket: 's3-explorer-public-data',
-    //   contentDirectory: path.join(__dirname, 'template')
-    // };
-    // const publishConfig = {
-    //   configureBucket: false,
-    //   cacheControlRegexMap: [
-    //     { value: 'public, max-age=86400' }
-    //   ]
-    // };
-    // const result = await new AwsArchitect(packageMetadata, apiOptions, contentOptions).publishWebsite(null, publishConfig);
-    // console.log('Publish Result', result);
+    const contentOptions = {
+      bucket: 's3-explorer-public-data',
+      contentDirectory: path.join(__dirname, 'template')
+    };
+    const publishConfig = {
+      configureBucket: false,
+      cacheControlRegexMap: [
+        { value: 'public, max-age=86400' }
+      ]
+    };
+    const result = await new AwsArchitect(packageMetadata, apiOptions, contentOptions).publishWebsite(null, publishConfig);
+    console.log('Publish Result', result);
   });
 
 commander.on('*', () => {
