@@ -57,10 +57,10 @@ export function prefix2parentfolder(prefix, escape = false) {
 const pathLimit = 80; // Max allowed path length
 const pathHellip = String.fromCharCode(8230); // '&hellip;' char
 export function path2short(path, escape = false) {
-  if (path.length < pathLimit) return escape ? htmlEscape(path) : path;
+  if (path.length < pathLimit) { return escape ? htmlEscape(path) : path; }
 
   const soft = `${prefix2parentfolder(fullpath2pathname(path)) + pathHellip}/${fullpath2filename(path)}`;
-  if (soft.length < pathLimit && soft.length > 2) return escape ? htmlEscape(soft) : soft;
+  if (soft.length < pathLimit && soft.length > 2) { return escape ? htmlEscape(soft) : soft; }
 
   const hard = `${path.substring(0, path.indexOf('/') + 1) + pathHellip}/${fullpath2filename(path)}`;
   const rc = hard.length < pathLimit ? hard : path.substring(0, pathLimit) + pathHellip;

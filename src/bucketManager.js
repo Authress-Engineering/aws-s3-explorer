@@ -77,7 +77,7 @@ export async function downloadObjects(bucket, keys) {
   await Promise.all(keys.map(async key => {
     const object = store.objects.find(o => o.key === key);
     if (object.type !== 'DIRECTORY') {
-      return downloadObject(key);
+      await downloadObject(key);
     }
 
     const bucketObjects = await fetchBucketObjectsExplicit(key, true);

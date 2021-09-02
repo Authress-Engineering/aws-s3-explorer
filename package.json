@@ -22,6 +22,7 @@
   "mode": "production",
   "dependencies": {
     "@suadelabs/vue3-multiselect": "^1.0.2",
+    "aws-sdk": "^2.981.0",
     "dragster": "^0.1.3",
     "dropzone": "^5.9.2",
     "file-saver": "^2.0.5",
@@ -42,20 +43,24 @@
   "devDependencies": {
     "@vitejs/plugin-vue": "^1.3.0",
     "@vue/compiler-sfc": "^3.0.5",
+    "axios": "^0.21.1",
     "ci-build-tools": "^1.0.13",
     "commander": "^4.0.1",
     "eslint": "^7.23.0",
     "eslint-config-airbnb": "^18.2.1",
+    "eslint-config-cimpress-atsquad": "1",
     "eslint-loader": "^4.0.2",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-mocha": "^7.0.1",
     "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.1.0",
+    "eslint-plugin-vue": "^7.17.0",
     "fs-extra": "^8.1.0",
     "glob": "^7.1.6",
     "sass": "^1.38.2",
     "vite": "^2.4.4"
   },
   "engines": {
-    "node": ">=10.21.0"
+    "node": ">=12"
   }
 }

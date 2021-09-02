@@ -27,7 +27,7 @@ export function correctClockSkew(Bucket) {
   });
 }
 
-const sha256 = async (str) => crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+const sha256 = str => crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
 
 const generateNonce = async () => {
   const hash = await sha256(crypto.getRandomValues(new Uint32Array(4)).toString());
@@ -36,10 +36,7 @@ const generateNonce = async () => {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 };
 
-const base64URLEncode = (string) => btoa(String.fromCharCode.apply(null, new Uint8Array(string)))
-  .replace(/\+/g, '-')
-  .replace(/\//g, '_')
-  .replace(/=+$/, '');
+const base64URLEncode = string => btoa(String.fromCharCode.apply(null, new Uint8Array(string))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
 export async function login() {
   const searchParams = new URL(window.location).searchParams;
@@ -117,7 +114,7 @@ export async function login() {
   await convertCredentialsToAWSCredentials();
 }
 
-async function convertCredentialsToAWSCredentials() {
+function convertCredentialsToAWSCredentials() {
   if (!store.identityPoolId) {
     return;
   }
