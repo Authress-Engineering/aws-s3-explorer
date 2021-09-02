@@ -1,0 +1,39 @@
+on:
+  pull_request:
+    branches:
+    - main
+    - master
+    - 'release/**'
+
+# https://docs.github.com/en/actions/reference/authentication-in-a-workflow#example-1-passing-the-github_token-as-an-input
+# https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#permissions
+permissions:
+  actions: none
+  checks: none
+  contents: none
+  deployments: none
+  issues: none
+  packages: none
+  pull-requests: none
+  repository-projects: none
+  security-events: none
+  statuses: none
+
+jobs:
+  nodejs:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: 14
+        registry-url: 'https://registry.npmjs.org'
+
+    - name: Install packages
+      run: yarn --frozen-lockfile
+    - name: Run Setup
+      run: yarn setup
+    - name: Run build
+      run: yarn build
