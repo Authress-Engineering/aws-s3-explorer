@@ -24,7 +24,18 @@ async function setupAWS() {
       RoleSessionName: `GitHubRunner-${process.env.GITHUB_REPOSITORY}-${process.env.GITHUB_RUN_NUMBER}`,
       DurationSeconds: 3600
     });
+  } catch (error) {
+    const loggedError = error.response && {
+      data: error.response.data,
+      status: error.response.status,
+      headers: error.response.headers,
+      config: error.config || error.response.config
+    } || error;
+    console.log('Failed to exchange token for AWS credentials:', JSON.stringify(loggedError, null, 2));
+    process.exit(1);
+  }
 
+  try {
     const stsResult = await new aws.STS().getCallerIdentity().promise();
     console.log('Configured AWS Credentials', stsResult);
   } catch (error) {
