@@ -42,7 +42,7 @@
                       <li>
                         Next you'll connect your SSO Provider to Cognito, follow your provider's guide to create a new client. Set the <strong>Redirect URI</strong> property set it to be:<br>
                         <div class="input-group">
-                          <input name="AWS AccountId" :value="`https://${store.awsAccountId}-s3explorer.auth.eu-west-1.amazoncognito.com/oauth2/idpresponse`" type="text" class="form-control" placeholder="742482629247" required="true" style="flex-grow: 1;" :disabled="true" />
+                          <input name="AWS AccountId" :value="`https://${store.awsAccountId || ''}-s3explorer.auth.eu-west-1.amazoncognito.com/oauth2/idpresponse`" type="text" class="form-control" placeholder="742482629247" required="true" style="flex-grow: 1;" :disabled="true" />
                           <span class="input-group-btn">
                             <button style="flex-grow: 1;" class="btn btn-primary" type="button"
                               @click="copyTextClicked">
