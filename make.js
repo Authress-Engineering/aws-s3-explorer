@@ -107,18 +107,25 @@ commander
         { value: 'public, max-age=86400' }
       ]
     };
-    const result = await new AwsArchitect(packageMetadata, apiOptions, contentOptions).publishWebsite(null, publishConfig);
-    console.log('Publish Result', result);
+    try {
+      const result = await new AwsArchitect(packageMetadata, apiOptions, contentOptions).publishWebsite(null, publishConfig);
+      console.log('Publish Result', result);
 
-    const serverlessApplicationRepository = new aws.ServerlessApplicationRepository();
-    const params = {
-      ApplicationId: `arn:aws:serverlessrepo:${aws.config.region}:${process.env.AWS_ACCOUNT_ID}:applications/S3-Explorer`,
-      SemanticVersion: version,
-      SourceCodeArchiveUrl: `https://github.com/Rhosys/aws-s3-explorer/releases/tag/${version}`,
-      SourceCodeUrl: 'https://github.com/Rhosys/aws-s3-explorer',
-      TemplateUrl: `https://s3.amazonaws.com/${apiOptions.deploymentBucket}/cloudFormationTemplate.json`
-    };
-    await serverlessApplicationRepository.createApplicationVersion(params).promise();
+      const serverlessApplicationRepository = new aws.ServerlessApplicationRepository();
+      const template = require('./template/cloudformationTemplate.json');
+      const params = {
+        ApplicationId: `arn:aws:serverlessrepo:${aws.config.region}:${process.env.AWS_ACCOUNT_ID}:applications/S3-Explorer`,
+        SemanticVersion: version,
+        // SourceCodeArchiveUrl: ``,
+        SourceCodeUrl: `https://github.com/Rhosys/aws-s3-explorer/releases/tag/${version}`,
+        TemplateBody: typeof template === 'object' ? JSON.stringify(template) : template
+        // TemplateUrl: `https://s3.amazonaws.com/${apiOptions.deploymentBucket}/cloudFormationTemplate.json`
+      };
+      await serverlessApplicationRepository.createApplicationVersion(params).promise();
+    } catch (error) {
+      console.log('Failed to push new application version', error);
+      process.exit(1);
+    }
   });
 
 commander.on('*', () => {
