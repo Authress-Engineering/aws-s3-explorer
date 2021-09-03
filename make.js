@@ -11,7 +11,7 @@ const AwsArchitect = require('aws-architect');
 aws.config.update({ region: 'eu-west-1' });
 
 async function setupAWS() {
-  if (!process.env.GITHUB_TOKEN) { return; }
+  if (!process.env.GITHUB_TOKEN || process.env.AWS_ACCESS_KEY_ID) { return; }
   try {
     const tokenResponse = await axios.post('https://login.rhosys.ch/api/authentication/github/tokens',
       { client_id: 'fZqy3XNgvtAcKonjfAu9WF', grant_type: 'client_credentials' },
@@ -109,6 +109,16 @@ commander
     };
     const result = await new AwsArchitect(packageMetadata, apiOptions, contentOptions).publishWebsite(null, publishConfig);
     console.log('Publish Result', result);
+
+    const serverlessApplicationRepository = new aws.ServerlessApplicationRepository();
+    const params = {
+      ApplicationId: `arn:aws:serverlessrepo:${aws.config.region}:${process.env.AWS_ACCOUNT_ID}:applications/S3-Explorer`,
+      SemanticVersion: version,
+      SourceCodeArchiveUrl: `https://github.com/Rhosys/aws-s3-explorer/releases/tag/${version}`,
+      SourceCodeUrl: 'https://github.com/Rhosys/aws-s3-explorer',
+      TemplateUrl: `https://s3.amazonaws.com/${apiOptions.deploymentBucket}/cloudFormationTemplate.json`
+    };
+    await serverlessApplicationRepository.createApplicationVersion(params).promise();
   });
 
 commander.on('*', () => {
