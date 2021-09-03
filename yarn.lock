@@ -329,12 +329,13 @@ async@^2.6.3:
   dependencies:
     lodash "^4.17.14"
 
-aws-architect@^6.5.714:
-  version "6.5.714"
-  resolved "https://registry.yarnpkg.com/aws-architect/-/aws-architect-6.5.714.tgz#6cea5e7ef8f5ed8bbfd60f0022af23edd1947c09"
-  integrity sha512-SIjSt4UAbZRrfKJj47LgmIkZZoqT6l8HA0Jp4FFHvkhb5SphotrTqPQt9vzyZduiWPJXGYFGpq6gARvgG/juIQ==
+aws-architect@^6.6.4:
+  version "6.6.4"
+  resolved "https://registry.yarnpkg.com/aws-architect/-/aws-architect-6.6.4.tgz#59263e15cec594df64def943bea706a4d59e169b"
+  integrity sha512-JeFC96EY0InUwpR1FWpEWbmx2upfAlZMXCDo7Zzsp1yj4NStABEzWuWd10j0OmbNlTdZv6mWCcCgmjBiZXcqgg==
   dependencies:
     archiver "^3.1.1"
+    axios "^0.21.1"
     body-parser "^1.18.2"
     commander "^2.5.0"
     cookie-parser "^1.4.2"
