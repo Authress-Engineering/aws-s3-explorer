@@ -179,7 +179,7 @@
     "S3BucketPolicy": {
       "Type": "AWS::S3::BucketPolicy",
       "Properties": {
-        "Bucket": { "Fn::Sub": "s3-explorer.${AWS::AccountId}" },
+        "Bucket": { "Ref": "BucketForS3ExplorerSavedConfiguration" },
         "PolicyDocument": {
           "Version": "2012-10-17",
           "Statement": [
@@ -188,7 +188,7 @@
               "Effect": "Allow",
               "Principal": "*",
               "Action": "s3:GetObject",
-              "Resource": { "Fn::Sub": "arn:aws:s3:::s3-explorer.${AWS::AccountId}/*" }
+              "Resource": { "Fn::Sub": "${BucketForS3ExplorerSavedConfiguration.Arn}/configuration.json" }
             }
           ]
         }
@@ -285,7 +285,7 @@
                 {
                   "Action": ["s3:PutObject"],
                   "Effect": "Allow",
-                  "Resource": [{ "Fn::Sub": "arn:aws:s3:::${BucketForS3ExplorerSavedConfiguration}/configuration.json" }]
+                  "Resource": [{ "Fn::Sub": "${BucketForS3ExplorerSavedConfiguration.Arn}/configuration.json" }]
                 }
               ],
               "Version": "2012-10-17"
