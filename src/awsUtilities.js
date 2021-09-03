@@ -119,8 +119,6 @@ function convertCredentialsToAWSCredentials() {
     return;
   }
 
-  store.region = store.identityPoolId.split(':')[0];
-
   if (!store.tokens) {
     return;
   }

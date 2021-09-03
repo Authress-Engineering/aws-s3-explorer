@@ -141,13 +141,14 @@ const generatedCognitoPoolUrl = computed(() => `https://eu-west-1.console.aws.am
 const cognitoLogin = async () => {
   if (store.awsAccountId && !store.applicationClientId) {
     try {
-      const data = await fetch('https://s3.eu-west-1.amazonaws.com/s3-explorer.838671519247/configuration.json');
+      const data = await fetch(`https://s3.eu-west-1.amazonaws.com/s3-explorer.${store.awsAccountId}/configuration.json`);
       const configuration = await data.json();
       DEBUG.log('Configuration for account fetched:', configuration);
       store.applicationClientId = configuration.applicationClientId;
-      store.applicationLoginUrl = `https://${configuration.applicationLoginUrl}.auth.eu-west-1.amazoncognito.com`;
       store.identityPoolId = configuration.identityPoolId;
       store.cognitoPoolId = configuration.cognitoPoolId;
+      store.region = store.identityPoolId.split(':')[0];
+      store.applicationLoginUrl = `https://${configuration.applicationLoginUrl}.auth.${store.region}.amazoncognito.com`;
     } catch (error) {
       bootbox.alert(`Error looking up account configuration: ${error}`);
       return;
