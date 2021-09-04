@@ -22,16 +22,15 @@
             <div v-else-if="store.tokens">
               <button type="button" class="btn btn-default" @click="selectBucket">Select Bucket</button>
             </div>
-                        
 
             <!-- Record count -->
             <div v-if="store.tokens && store.currentBucket">
               <div class="btn-group" v-if="selectedKeysCount === 0">
-                <span id="badgecount" style="cursor: default;" class="btn badge " title="Object count">{{store.objects.length}} {{ store.objects.length > 1 ? 'objects' : 'object' }}</span>
+                <span id="badgecount" style="cursor: default;" class="btn badge " title="Object count">{{ store.objects.length }} {{ store.objects.length > 1 ? 'objects' : 'object' }}</span>
               </div>
               <!-- Record/checked count -->
               <div class="btn-group" v-if="selectedKeysCount > 0">
-                <span id="badgecount" style="cursor: default;" class="btn badge " title="Selected object count">{{ selectedKeysCount }} of {{store.objects.length}} selected</span>
+                <span id="badgecount" style="cursor: default;" class="btn badge " title="Selected object count">{{ selectedKeysCount }} of {{ store.objects.length }} selected</span>
               </div>
             </div>
           </div>
@@ -96,9 +95,9 @@
                 <td><i class="fas fa-folder" style="margin-right: 1rem" /><a :href="`#path=${path.key}`" @click="exploreDirectory(path.key)">
                   {{ path.key.split(store.delimiter).slice(-1)[0] || store.delimiter }}</a>
                 </td>
-                <td style="text-align: center"></td>
-                <td style="text-align: center"></td>
-                <td style="text-align: center"></td>
+                <td style="text-align: center" />
+                <td style="text-align: center" />
+                <td style="text-align: center" />
               </tr>
               <tr v-for="path in sortedObjects.filter(o => o.type === 'PATH' && o.key.split(store.delimiter).slice(-1)[0])" :key="path.key">
                 <td style="text-align: center; cursor: pointer" @click="() => state.selectedKeys[path.key] = !state.selectedKeys[path.key]">
@@ -124,7 +123,6 @@
         </div>
       </div>
 
-
       <div class="panel-body" style="overflow: auto; text-align: center">
         Drag and drop files and folders you want to upload here.
         <br><br>
@@ -149,7 +147,7 @@
 </template>
 
 <script setup>
-import { reactive, onMounted, computed, watch } from 'vue'
+import { reactive, onMounted, computed, watch } from 'vue';
 
 import DEBUG from '../logger';
 import store from '../store';
@@ -192,11 +190,11 @@ const logout = () => {
   }
 
   store.showSettings = true;
-}
+};
 
 const selectBucket = () => {
   store.showBucketSelector = true;
-}
+};
 
 onMounted(async () => {
   if (store.loggedOut) {
@@ -211,6 +209,9 @@ onMounted(async () => {
       await fetchBucketObjects();
     } catch (error) {
       DEBUG.log('Fetching Bucket Objects Error: ', error);
+    }
+
+    if (!store.rememberedBuckets.length) {
       store.showBucketSelector = true;
     }
   }
@@ -269,7 +270,6 @@ watch(globalSelectWatcher, newValue => {
 a {
   color: #2e6da4;
 }
-
 
 .d-flex {
   display: flex;
