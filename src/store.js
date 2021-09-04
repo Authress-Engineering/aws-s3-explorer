@@ -15,6 +15,7 @@ const store = reactive(Object.assign({
   applicationClientId: null,
   applicationLoginUrl: null,
   identityPoolId: null,
+  userRoleId: null,
 
   objects: [],
 

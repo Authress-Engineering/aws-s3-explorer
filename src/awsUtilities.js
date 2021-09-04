@@ -135,6 +135,7 @@ function convertCredentialsToAWSCredentials() {
     AWS.config.credentials.get(async () => {
       const stsResult = await new AWS.STS({ region: store.region }).getCallerIdentity().promise();
       DEBUG.log('AWS Credentials Set', stsResult);
+      store.userRoleId = stsResult.Arn.split('/')[1];
     });
   } catch (error) {
     DEBUG.log('Failed to set credentials, following requests will not work due to the error:', error);
