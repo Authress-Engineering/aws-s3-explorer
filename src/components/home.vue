@@ -211,7 +211,7 @@ onMounted(async () => {
       DEBUG.log('Fetching Bucket Objects Error: ', error);
     }
 
-    if (!store.rememberedBuckets.length) {
+    if (!store.rememberedBuckets.length && !store.showSettings) {
       store.showBucketSelector = true;
     }
   }
