@@ -11,6 +11,7 @@
   },
   "globals": {
     "AWS": false,
+    "bootbox": false,
     "globalThis": true
   },
   "plugins": [
