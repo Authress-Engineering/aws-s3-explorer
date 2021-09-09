@@ -4,8 +4,8 @@
       <div class="badge d-flex align-items-center justify-content-center">
         <div class="d-flex align-items-center justify-content-center">
           <span class="mr-3 d-none d-sm-block">
-            <i class="fas fa-bolt" style="color: gold" />
-            Powered By Authress</span>
+            <i class="fas fa-shield-alt" style="color: gold" />
+            Protected By Authress</span>
         </div>
       </div>
     </div>
