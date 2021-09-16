@@ -50,6 +50,10 @@ td {
     padding: 3px 6px;
 }
 
+button.btn:disabled {
+    cursor: auto !important;
+}
+
 .tab-content {
     border-left: 1px solid #ddd;
     border-right: 1px solid #ddd;

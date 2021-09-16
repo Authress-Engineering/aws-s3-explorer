@@ -19,7 +19,8 @@ const store = reactive(Object.assign({
 
   objects: [],
 
-  loggedOut: false
+  loggedOut: false,
+  autoLoginIn: false
 }, storedData, {
   initialized: false,
   showBucketSelector: false,
@@ -38,6 +39,13 @@ watch(store, () => {
 const currentBucket = computed(() => store.currentBucket);
 watch(currentBucket, () => {
   store.deletedObjects = {};
+});
+
+const awsAccountId = computed(() => store.awsAccountId);
+watch(awsAccountId, () => {
+  store.applicationClientId = null;
+  store.applicationLoginUrl = null;
+  store.userRoleId = null;
 });
 
 export default store;

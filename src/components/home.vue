@@ -115,7 +115,7 @@
       </div>
     </div>
 
-    <div class="panel panel-success" v-if="store.tokens && store.currentBucket" @click="store.showUploads = true" style="cursor: pointer">
+    <div class="panel panel-success" v-if="store.awsAccountId && store.tokens && store.currentBucket" @click="store.showUploads = true" style="cursor: pointer">
       <div class="panel-heading" style="display: flex; direction: row; align-items: center; justify-content: space-between;">
 
         <div style="display: flex; direction: row; align-items: center">

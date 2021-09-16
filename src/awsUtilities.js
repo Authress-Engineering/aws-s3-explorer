@@ -38,10 +38,12 @@ const generateNonce = async () => {
 
 const base64URLEncode = string => btoa(String.fromCharCode.apply(null, new Uint8Array(string))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
-export async function login() {
+export async function login(forceLogin) {
   const searchParams = new URL(window.location).searchParams;
   store.initialized = true;
   if (store.tokens && DateTime.fromSeconds(jwtManager.decode(store.tokens.access_token).exp) > DateTime.utc()) {
+    store.autoLoginIn = true;
+    DEBUG.log('Found login token skipping login');
     await convertCredentialsToAWSCredentials();
     store.showSettings = false;
     return;
@@ -84,12 +86,13 @@ export async function login() {
     store.tokens = tokens;
     await convertCredentialsToAWSCredentials();
     store.showSettings = false;
+    store.autoLoginIn = true;
     return;
   }
 
   DEBUG.log('Validating login parameters');
-  if (!store.applicationLoginUrl || !store.applicationClientId || !store.identityPoolId) {
-    DEBUG.log('Missing required parameter for login', store.applicationClientId, store.applicationClientId, store.identityPoolId);
+  if (!store.awsAccountId || !store.applicationLoginUrl || !store.applicationClientId || !store.identityPoolId) {
+    DEBUG.log('Missing required parameter for login', store.awsAccountId, store.applicationLoginUrl, store.applicationClientId, store.identityPoolId);
     store.showSettings = true;
     return;
   }
@@ -102,7 +105,11 @@ export async function login() {
     return;
   }
 
+  if (!forceLogin && !store.autoLoginIn) {
+    return;
+  }
   // otherwise redirect login
+  store.autoLoginIn = false;
   const nonce = await generateNonce();
   const codeVerifier = await generateNonce();
   localStorage.setItem('codeVerifier', codeVerifier);
@@ -133,9 +140,16 @@ function convertCredentialsToAWSCredentials() {
 
     DEBUG.log('Checking credentials');
     AWS.config.credentials.get(async () => {
-      const stsResult = await new AWS.STS({ region: store.region }).getCallerIdentity().promise();
-      DEBUG.log('AWS Credentials Set', stsResult);
-      store.userRoleId = stsResult.Arn.split('/')[1];
+      try {
+        const stsResult = await new AWS.STS({ region: store.region }).getCallerIdentity().promise();
+        DEBUG.log('AWS Credentials Set', stsResult);
+        store.userRoleId = stsResult.Arn.split('/')[1];
+        store.autoLoginIn = true;
+      } catch (error) {
+        DEBUG.log('Failed to get credentials, following requests will not work due to the error:', error);
+        store.awsAccountId = null;
+        store.applicationClientId = null;
+      }
     });
   } catch (error) {
     DEBUG.log('Failed to set credentials, following requests will not work due to the error:', error);

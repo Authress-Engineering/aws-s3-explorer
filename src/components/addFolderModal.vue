@@ -38,7 +38,7 @@
 </template>
 
 <script setup>
-import { reactive, onMounted } from 'vue'
+import { reactive } from 'vue';
 
 import DEBUG from '../logger';
 import store from '../store';

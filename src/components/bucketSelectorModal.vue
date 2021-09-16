@@ -130,7 +130,8 @@ const bucketSelected = async (bucket, skipClose) => {
   }
 };
 
-const newBucketEntered = newBucket => {
+const newBucketEntered = newBucketRaw => {
+  const newBucket = newBucketRaw && newBucketRaw.trim();
   store.rememberedBuckets.push({ bucket: newBucket });
   store.currentBucket = newBucket;
   bucketSelected(newBucket);
@@ -150,14 +151,18 @@ onMounted(async () => {
 
 <style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
 
-<style lang="scss">
-.multiselect__option--selected.multiselect__option--highlight {
-  background: #41b883 !important;
-}
-
-input.multiselect__input {
-  &::placeholder {
-    color: lightgrey !important;
+<style lang="scss" scoped>
+  ::v-deep(.multiselect__option--selected.multiselect__option--highlight) {
+    background: #41b883 !important;
   }
-}
+
+  ::v-deep(input.multiselect__input) {
+    &::placeholder {
+      color: lightgrey !important;
+    }
+  }
+
+  ::v-deep(.multiselect__placeholder) {
+    margin-bottom: unset !important;
+  }
 </style>

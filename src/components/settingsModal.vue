@@ -139,7 +139,7 @@ const state = reactive({ region: null, copyButtonSuccess: false });
 const generatedCognitoPoolUrl = computed(() => `https://eu-west-1.console.aws.amazon.com/cognito/users?region=eu-west-1#/pool/${store.cognitoPoolId}`);
 const launchStackUrl = computed(() => {
   if (store.awsAccountId) {
-    return 'https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=S3-Explorer&templateURL=https://s3-explorer-public-data.s3.eu-west-1.amazonaws.com/cloudformationTemplate.json';
+    return 'https://eu-west-1.console.aws.amazon.com/lambda/home?region=eu-west-1#/create/app?applicationId=arn:aws:serverlessrepo:eu-west-1:922723803004:applications/S3-Explorer';
   }
   return null;
 });
@@ -156,11 +156,12 @@ const cognitoLogin = async () => {
       store.region = store.identityPoolId.split(':')[0];
       store.applicationLoginUrl = `https://${configuration.applicationLoginUrl}.auth.${store.region}.amazoncognito.com`;
     } catch (error) {
-      bootbox.alert(`Error looking up account configuration: ${error}`);
+      DEBUG.log('Failed to load configuration', error);
+      bootbox.alert(`Error looking up account configuration: ${error.message}`);
       return;
     }
   }
-  await login();
+  await login(true);
 };
 
 const copyTextClicked = () => {
@@ -169,6 +170,3 @@ const copyTextClicked = () => {
   });
 };
 </script>
-
-<style lang="scss" scoped>
-</style>
