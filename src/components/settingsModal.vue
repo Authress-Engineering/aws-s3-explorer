@@ -32,7 +32,7 @@
                         <div style="display: flex; align-items: center">
                           <input name="AWS AccountId" v-model="store.awsAccountId" type="text" class="form-control" placeholder="742482629247" required="true"
                             style="flex-grow: 1; margin-right: 0.5rem">
-                          <a href="https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=S3-Explorer&templateURL=https://s3-explorer-public-data.s3.eu-west-1.amazonaws.com/cloudformationTemplate.json" target="_blank"><img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png"></a>
+                          <a :href="launchStackUrl || '#'" :target="launchStackUrl ? '_blank' : '_self'" :class="{ 'disabled': !launchStackUrl }"><img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png"></a>
                         </div>
                       </li>
                       <li>
@@ -41,9 +41,9 @@
                           <input name="AWS AccountId" :value="`https://${store.awsAccountId || ''}-s3explorer.auth.eu-west-1.amazoncognito.com/oauth2/idpresponse`"
                             type="text" class="form-control" placeholder="742482629247" required="true" style="flex-grow: 1;" :disabled="true">
                           <span class="input-group-btn">
-                            <button style="flex-grow: 1;" class="btn btn-primary" type="button"
+                            <button style="flex-grow: 1;" class="btn btn-primary" type="button" :disabled="!store.awsAccountId"
                               @click="copyTextClicked">
-                                <span v-if="!state.copyButtonSuccess"><i class="fas fa-copy"/> Copy</span>
+                                <span v-if="!state.copyButtonSuccess"><i class="fas fa-copy" /> Copy</span>
                                 <span v-else><i class="fas fa-check" /> Copy</span>
                             </button>
                           </span>
@@ -126,7 +126,6 @@
   </div>
 </template>
 
-
 <script setup>
 import { reactive, computed } from 'vue';
 import { copyText } from 'vue3-clipboard';
@@ -138,6 +137,12 @@ import { login } from '../awsUtilities';
 const state = reactive({ region: null, copyButtonSuccess: false });
 
 const generatedCognitoPoolUrl = computed(() => `https://eu-west-1.console.aws.amazon.com/cognito/users?region=eu-west-1#/pool/${store.cognitoPoolId}`);
+const launchStackUrl = computed(() => {
+  if (store.awsAccountId) {
+    return 'https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=S3-Explorer&templateURL=https://s3-explorer-public-data.s3.eu-west-1.amazonaws.com/cloudformationTemplate.json';
+  }
+  return null;
+});
 
 const cognitoLogin = async () => {
   if (store.awsAccountId && !store.applicationClientId) {
@@ -162,5 +167,8 @@ const copyTextClicked = () => {
   copyText(`https://${store.awsAccountId}-s3explorer.auth.eu-west-1.amazoncognito.com/oauth2/idpresponse`, undefined, () => {
     state.copyButtonSuccess = true;
   });
-}
+};
 </script>
+
+<style lang="scss" scoped>
+</style>
