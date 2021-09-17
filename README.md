@@ -5,7 +5,7 @@
       <img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg">
     </a>
     <a href="https://eu-west-1.console.aws.amazon.com/lambda/home?region=eu-west-1#/create/app?applicationId=arn:aws:serverlessrepo:eu-west-1:922723803004:applications/S3-Explorer" alt="Installations">
-      <img src="https://img.shields.io/badge/Installed%20Deployments-8.1k-success">
+      <img src="https://img.shields.io/badge/Installed%20Deployments-1637-success">
     </a>
     <a href="https://eu-west-1.console.aws.amazon.com/lambda/home?region=eu-west-1#/create/app?applicationId=arn:aws:serverlessrepo:eu-west-1:922723803004:applications/S3-Explorer" alt="AWS Serverless Application">
         <img src="https://img.shields.io/badge/AWS%20Serverless%20Application-S3%20Explorer-blue">
