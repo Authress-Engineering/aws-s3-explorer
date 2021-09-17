@@ -27,18 +27,26 @@
                     <h4>One time AWS Cloud Formation setup</h4>
                     The S3 Explorer provides a quick setup step using a CFN template. Follow the steps to configure your account, and only need to be run once per AWS account.
                     <ol>
+                      <br>
                       <li>
-                        Enter your AWS Account ID and launch the CFN template<br>(you'll be able to review on the next screen):<br>
-                        <div style="display: flex; align-items: center">
-                          <input name="AWS AccountId" v-model="store.awsAccountId" type="text" class="form-control" placeholder="742482629247" required="true"
-                            style="flex-grow: 1; margin-right: 0.5rem">
+                        <div style="display: flex; align-items: center; justify-content: space-between">
+                          <span>EnterLaunch the CFN template:<br><small>(you'll be able to review on the next screen)</small><br></span>
                           <a :href="launchStackUrl || '#'" :target="launchStackUrl ? '_blank' : '_self'" :class="{ 'disabled': !launchStackUrl }"><img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png"></a>
                         </div>
                       </li>
+                      <br>
+                      <li>
+                        Wait for the app to be completely deployed and then enter your AWS Account ID:
+                        <div>
+                          <input name="AWS AccountId" v-model="store.awsAccountId" type="text" class="form-control" placeholder="742482629247" required="true"
+                            style="flex-grow: 1; margin-right: 0.5rem; width: 200px;" maxlength="20">
+                        </div>
+                      </li>
+                      <br>
                       <li>
                         Next you'll connect your SSO Provider to Cognito, follow your provider's guide to create a new client. Set the <strong>Redirect URI</strong> property set it to be:<br>
                         <div class="input-group">
-                          <input name="AWS AccountId" :value="`https://${store.awsAccountId || ''}-s3explorer.auth.eu-west-1.amazoncognito.com/oauth2/idpresponse`"
+                          <input name="AWS AccountId" :value="`https://${store.awsAccountId || ''}-s3explorer.auth.${store.region}.amazoncognito.com/oauth2/idpresponse`"
                             type="text" class="form-control" placeholder="742482629247" required="true" style="flex-grow: 1;" :disabled="true">
                           <span class="input-group-btn">
                             <button style="flex-grow: 1;" class="btn btn-primary" type="button" :disabled="!store.awsAccountId"
@@ -50,8 +58,9 @@
 
                         </div>
                       </li>
+                      <br>
                       <li>
-                        Navigate to the newly created <a :href="`${generatedCognitoPoolUrl}/federation-identity-providers`" target="_blank">Cognito Pool:</a>
+                        Navigate to the newly created Cognito Pool and configure:
                         <ul>
                           <li><a :href="`${generatedCognitoPoolUrl}/federation-identity-providers`" target="_blank">
                             Federation > Identity providers</a><br>Select an identity provider and fill in the credentials.
@@ -135,10 +144,12 @@ import { login, setConfiguration } from '../awsUtilities';
 
 const state = reactive({ region: null, copyButtonSuccess: false });
 
-const generatedCognitoPoolUrl = computed(() => `https://eu-west-1.console.aws.amazon.com/cognito/users?region=eu-west-1#/pool/${store.cognitoPoolId}`);
+const suggestedRegion = 'eu-west-1';
+
+const generatedCognitoPoolUrl = computed(() => `https://${store.region}.console.aws.amazon.com/cognito/users?region=${store.region}#/pool/${store.cognitoPoolId}`);
 const launchStackUrl = computed(() => {
   if (store.awsAccountId) {
-    return 'https://eu-west-1.console.aws.amazon.com/lambda/home?region=eu-west-1#/create/app?applicationId=arn:aws:serverlessrepo:eu-west-1:922723803004:applications/S3-Explorer';
+    return `https://${suggestedRegion}.console.aws.amazon.com/lambda/home?region=${suggestedRegion}#/create/app?applicationId=arn:aws:serverlessrepo:eu-west-1:922723803004:applications/S3-Explorer`;
   }
   return null;
 });
@@ -149,7 +160,7 @@ const cognitoLogin = async () => {
 };
 
 const copyCognitoPoolCallbackUrl = () => {
-  copyText(`https://${store.awsAccountId}-s3explorer.auth.eu-west-1.amazoncognito.com/oauth2/idpresponse`, undefined, () => {
+  copyText(`https://${store.awsAccountId}-s3explorer.auth.${store.region || suggestedRegion}.amazoncognito.com/oauth2/idpresponse`, undefined, () => {
     state.copyButtonSuccess = true;
     setConfiguration(store.awsAccountId);
   });

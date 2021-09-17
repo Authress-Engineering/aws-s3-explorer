@@ -126,6 +126,9 @@ const awsAccountId = computed(() => store.awsAccountId);
 watch(awsAccountId, newAwsAccountId => {
   setConfiguration(newAwsAccountId);
 });
+
+const suggestedRegion = 'eu-west-1';
+
 export async function setConfiguration(newAwsAccountId) {
   DEBUG.log(`AccountID changed, updating configuration: ${newAwsAccountId}`);
   if (!newAwsAccountId) {
@@ -138,11 +141,11 @@ export async function setConfiguration(newAwsAccountId) {
   if (store.awsAccountId) {
     let configuration;
     try {
-      const data = await fetch(`https://s3.eu-west-1.amazonaws.com/s3-explorer.${store.awsAccountId}.eu-west-1/configuration.json`);
+      const data = await fetch(`https://s3.${suggestedRegion}.amazonaws.com/s3-explorer.${store.awsAccountId}.${suggestedRegion}/configuration.json`);
       configuration = await data.json();
     } catch (error) {
       try {
-        const data = await fetch(`https://s3.eu-west-1.amazonaws.com/s3-explorer.${store.awsAccountId}/configuration.json`);
+        const data = await fetch(`https://s3.${suggestedRegion}.amazonaws.com/s3-explorer.${store.awsAccountId}/configuration.json`);
         configuration = await data.json();
       } catch (retryError) {
         DEBUG.log('Failed to load configuration', error);
