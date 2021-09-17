@@ -110,7 +110,7 @@
     "AuthenticatedUserRoleForS3ExplorerUsers": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "RoleName": "S3_Explorer_Authenticated_User",
+        "RoleName": { "Fn::Sub": "S3_Explorer_Authenticated_User-${AWS::Region}" },
         "Path": "/",
         "MaxSessionDuration": 43200,
         "AssumeRolePolicyDocument": {
