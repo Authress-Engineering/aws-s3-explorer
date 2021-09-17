@@ -181,6 +181,7 @@ const logout = () => {
   DEBUG.log('Logging out');
   store.objects = [];
   store.loggedOut = true;
+  store.showBucketSelector = false;
 
   if (store.tokens) {
     store.tokens = null;
