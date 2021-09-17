@@ -55,7 +55,7 @@
           "https://rhosys.github.io/aws-s3-explorer/"
         ],
         "ClientName": "S3 Explorer UI",
-        "DefaultRedirectURI": "https://rhosys.github.io/aws-s3-explorer/",
+        "DefaultRedirectURI": "https://console.rhosys.ch/",
         "EnableTokenRevocation": true,
         "ExplicitAuthFlows": ["ALLOW_REFRESH_TOKEN_AUTH"],
         "GenerateSecret": false,
@@ -155,7 +155,7 @@
     "BucketForS3ExplorerSavedConfiguration": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
-        "BucketName": { "Fn::Sub": "s3-explorer.${AWS::AccountId}" },
+        "BucketName": { "Fn::Sub": "s3-explorer.${AWS::AccountId}.${AWS::Region}" },
         "CorsConfiguration": {
           "CorsRules": [
             {

@@ -41,13 +41,6 @@ watch(currentBucket, () => {
   store.deletedObjects = {};
 });
 
-const awsAccountId = computed(() => store.awsAccountId);
-watch(awsAccountId, () => {
-  store.applicationClientId = null;
-  store.applicationLoginUrl = null;
-  store.userRoleId = null;
-});
-
 export default store;
 
 export function getViewPrefix() { return store.view_prefix || store.prefix; }

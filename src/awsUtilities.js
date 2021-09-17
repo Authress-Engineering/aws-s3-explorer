@@ -1,3 +1,4 @@
+import { watch, computed } from 'vue';
 import { DateTime } from 'luxon';
 import DEBUG from './logger';
 import store from './store';
@@ -119,6 +120,44 @@ export async function login(forceLogin) {
   store.loggedOut = false;
   window.location = `${store.applicationLoginUrl}/oauth2/authorize?response_type=code&client_id=${store.applicationClientId}&state=${nonce}&code_challenge_method=S256&code_challenge=${codeChallenge}&redirect_uri=${redirectUri}`;
   await convertCredentialsToAWSCredentials();
+}
+
+const awsAccountId = computed(() => store.awsAccountId);
+watch(awsAccountId, newAwsAccountId => {
+  setConfiguration(newAwsAccountId);
+});
+export async function setConfiguration(newAwsAccountId) {
+  DEBUG.log(`AccountID changed, updating configuration: ${newAwsAccountId}`);
+  if (!newAwsAccountId) {
+    store.applicationClientId = null;
+    store.applicationLoginUrl = null;
+    store.userRoleId = null;
+    return;
+  }
+
+  if (store.awsAccountId) {
+    let configuration;
+    try {
+      const data = await fetch(`https://s3.eu-west-1.amazonaws.com/s3-explorer.${store.awsAccountId}.eu-west-1/configuration.json`);
+      configuration = await data.json();
+    } catch (error) {
+      try {
+        const data = await fetch(`https://s3.eu-west-1.amazonaws.com/s3-explorer.${store.awsAccountId}/configuration.json`);
+        configuration = await data.json();
+      } catch (retryError) {
+        DEBUG.log('Failed to load configuration', error);
+        bootbox.alert(`Error looking up account configuration: ${error.message}`);
+        return;
+      }
+    }
+
+    DEBUG.log('Configuration for account fetched:', configuration);
+    store.applicationClientId = configuration.applicationClientId;
+    store.identityPoolId = configuration.identityPoolId;
+    store.cognitoPoolId = configuration.cognitoPoolId;
+    store.region = store.identityPoolId.split(':')[0];
+    store.applicationLoginUrl = `https://${configuration.applicationLoginUrl}.auth.${store.region}.amazoncognito.com`;
+  }
 }
 
 function convertCredentialsToAWSCredentials() {

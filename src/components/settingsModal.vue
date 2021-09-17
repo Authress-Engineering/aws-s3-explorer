@@ -42,7 +42,7 @@
                             type="text" class="form-control" placeholder="742482629247" required="true" style="flex-grow: 1;" :disabled="true">
                           <span class="input-group-btn">
                             <button style="flex-grow: 1;" class="btn btn-primary" type="button" :disabled="!store.awsAccountId"
-                              @click="copyTextClicked">
+                              @click="copyCognitoPoolCallbackUrl">
                                 <span v-if="!state.copyButtonSuccess"><i class="fas fa-copy" /> Copy</span>
                                 <span v-else><i class="fas fa-check" /> Copy</span>
                             </button>
@@ -130,9 +130,8 @@
 import { reactive, computed } from 'vue';
 import { copyText } from 'vue3-clipboard';
 
-import DEBUG from '../logger';
 import store from '../store';
-import { login } from '../awsUtilities';
+import { login, setConfiguration } from '../awsUtilities';
 
 const state = reactive({ region: null, copyButtonSuccess: false });
 
@@ -145,28 +144,14 @@ const launchStackUrl = computed(() => {
 });
 
 const cognitoLogin = async () => {
-  if (store.awsAccountId && !store.applicationClientId) {
-    try {
-      const data = await fetch(`https://s3.eu-west-1.amazonaws.com/s3-explorer.${store.awsAccountId}/configuration.json`);
-      const configuration = await data.json();
-      DEBUG.log('Configuration for account fetched:', configuration);
-      store.applicationClientId = configuration.applicationClientId;
-      store.identityPoolId = configuration.identityPoolId;
-      store.cognitoPoolId = configuration.cognitoPoolId;
-      store.region = store.identityPoolId.split(':')[0];
-      store.applicationLoginUrl = `https://${configuration.applicationLoginUrl}.auth.${store.region}.amazoncognito.com`;
-    } catch (error) {
-      DEBUG.log('Failed to load configuration', error);
-      bootbox.alert(`Error looking up account configuration: ${error.message}`);
-      return;
-    }
-  }
+  await setConfiguration(store.awsAccountId);
   await login(true);
 };
 
-const copyTextClicked = () => {
+const copyCognitoPoolCallbackUrl = () => {
   copyText(`https://${store.awsAccountId}-s3explorer.auth.eu-west-1.amazoncognito.com/oauth2/idpresponse`, undefined, () => {
     state.copyButtonSuccess = true;
+    setConfiguration(store.awsAccountId);
   });
 };
 </script>
