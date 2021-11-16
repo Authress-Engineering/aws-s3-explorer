@@ -30,7 +30,7 @@
                       <br>
                       <li>
                         <div style="display: flex; align-items: center; justify-content: space-between">
-                          <span>EnterLaunch the CFN template:<br><small>(you'll be able to review on the next screen)</small><br></span>
+                          <span>Launch the CFN template:<br><small>(you'll be able to review on the next screen)</small><br></span>
                           <a :href="launchStackUrl || '#'" :target="launchStackUrl ? '_blank' : '_self'" :class="{ 'disabled': !launchStackUrl }"><img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png"></a>
                         </div>
                       </li>
