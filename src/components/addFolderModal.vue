@@ -13,10 +13,10 @@
                 <div class="panel panel-default">
                   <div class="panel-body">
                     <p>Please enter the relative path of the S3 folder to add to the current directory of the selected bucket, for example folder01 or Lorem/Ipsum/Bacon.</p>
-                    <span>Current Bucket: <strong>{{store.currentBucket}}</strong></span><br><br>
+                    <span>Current Bucket: <strong>{{ store.currentBucket }}</strong></span><br><br>
                     <div class="input-group bottom-marg-10">
-                      <span class="input-group-addon">{{store.currentDirectory || '(root)' }}</span>
-                      <input name="folder" v-model="state.newFolderName" type="text" class="form-control" placeholder="folder" required="true" />
+                      <span class="input-group-addon">{{ store.currentDirectory || '(root)' }}</span>
+                      <input name="folder" v-model.trim="state.newFolderName" type="text" class="form-control" placeholder="folder" required="true">
                     </div>
                   </div>
                 </div>
@@ -26,7 +26,7 @@
               <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-10">
                   <button type="button" class="btn btn-default" @click="store.showAddFolder = false">Cancel</button>
-                  <button type="submit" :disabled="!state.newFolderName" class="btn btn-primary"><i class='fa fa-folder-plus fa-lg'></i>&nbsp;Add Folder</button>
+                  <button type="submit" :disabled="!state.newFolderName" class="btn btn-primary"><i class="fa fa-folder-plus fa-lg" />&nbsp;Add Folder</button>
                 </div>
               </div>
             </div>

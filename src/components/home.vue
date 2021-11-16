@@ -58,13 +58,15 @@
               </span>
             </div>
             <div style="flex-shrink: 0; flex-grow: 1; display: flex; flex-direction: row; flex-wrap: no-wrap; justify-content: flex-end">
-              <button type="button" style="cursor: pointer; margin-left: 0.5rem" class="text-primary btn btn-xs btn-warning" :disabled="!selectedKeysCount" @click="downloadFiles" title="Download files">
+              <button type="button" style="cursor: pointer; margin-left: 0.5rem" class="text-primary btn btn-xs btn-warning"
+                :disabled="!selectedKeysCount" @click="downloadFiles" title="Download files">
                 <i class="fa fa-cloud-download-alt" style="margin-right: 0.5rem" />Download
               </button>
               <button type="button" style="cursor: pointer; margin-left: 0.5rem" class="text-primary btn btn-xs btn-primary" @click="store.showAddFolder = true" title="New folder">
                 <i class="fa fa-folder-plus" style="margin-right: 0.5rem" />New Folder
               </button>
-              <button type="button" style="cursor: pointer; margin-left: 0.5rem" class="text-primary btn btn-xs btn-danger" :disabled="!selectedKeysCount" @click="store.showTrash = true" title="Delete Objects">
+              <button type="button" style="cursor: pointer; margin-left: 0.5rem" class="text-primary btn btn-xs btn-danger"
+                :disabled="!selectedKeysCount" @click="store.showTrash = true" title="Delete Objects">
                 <i class="fa fa-trash-alt" style="margin-right: 0.5rem" />Delete Objects
               </button>
             </div>

@@ -17,7 +17,8 @@
                   <br>
                   <div style="display: flex; align-items: center">
                     <span style="flex-grow: 1; flex-shrink: 0; margin-right: 0.5rem">AWS AccountId:&nbsp;</span><br>
-                    <input name="AWS AccountId" v-model="store.awsAccountId" type="text" class="form-control" placeholder="742482629247" required="true" style="flex-grow: 1; margin-right: 0.5rem">
+                    <input name="AWS AccountId" v-model.trim="store.awsAccountId"
+                      type="text" class="form-control" placeholder="742482629247" required="true" style="flex-grow: 1; margin-right: 0.5rem">
                     <button style="flex-grow: 1; margin-right: 0.5rem" type="submit" class="btn btn-primary" :disabled="!store.awsAccountId"><i class="fas fa-sign-in-alt" /> Login</button>
                   </div>
 
@@ -38,7 +39,7 @@
                       <li>
                         Wait for the app to be completely deployed and then enter your AWS Account ID:
                         <div>
-                          <input name="AWS AccountId" v-model="store.awsAccountId" type="text" class="form-control" placeholder="742482629247" required="true"
+                          <input name="AWS AccountId" v-model.trim="store.awsAccountId" type="text" class="form-control" placeholder="742482629247" required="true"
                             style="flex-grow: 1; margin-right: 0.5rem; width: 200px;" maxlength="20">
                         </div>
                       </li>

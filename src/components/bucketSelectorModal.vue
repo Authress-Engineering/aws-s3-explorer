@@ -13,7 +13,7 @@
                 <br>
                 <h4>Select a bucket or specify a new one:</h4>
                 <multiselect
-                  v-model="store.currentBucket"
+                  v-model.trim="store.currentBucket"
                   :options="store.rememberedBuckets.map(b => b.bucket)"
                   placeholder="Select a bucket or enter a new one"
                   :showLabels="false" :allowEmpty="false" :taggable="true"
