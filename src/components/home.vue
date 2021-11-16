@@ -9,9 +9,6 @@
           <!-- Bucket selection and breadcrumbs -->
           <div style="display: flex; direction: row; align-items: center">
             <div class="title d-flex" style="align-items: center">
-              <div style="height: 30px; width: 30px; background: white; border-radius: 5px; margin-right: 1rem">
-                <img src="../assets/bucket-logo-focused.png" height="30">
-              </div>
               <h4>AWS S3 Explorer</h4>
             </div>
             <!-- Bucket breadcrumbs -->
