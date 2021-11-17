@@ -5,9 +5,14 @@ on:
     - master
     - 'release/**'
 
+permissions:
+  contents: read
+  pull-requests: read
+  id-token: read
+
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
@@ -29,6 +34,7 @@ jobs:
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-region: eu-west-1
+        role-duration-seconds: 3600
         role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubRunnerAssumedRole`
         role-session-name: GitHubRunner-${{ github.repository }}-${{ github.run_number }}
     - name: After build
