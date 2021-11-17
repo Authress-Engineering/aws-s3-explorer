@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 
-const axios = require('axios');
 const aws = require('aws-sdk');
 const commander = require('commander');
 const fs = require('fs-extra');
@@ -9,41 +8,6 @@ const AwsArchitect = require('aws-architect');
 // const githubActionsRunner = require('ci-build-tools')(process.env.GITHUB_TOKEN);
 
 aws.config.update({ region: 'eu-west-1' });
-
-// eslint-disable-next-line no-unused-vars
-async function setupAWS() {
-  if (!process.env.GITHUB_TOKEN || process.env.AWS_ACCESS_KEY_ID) { return; }
-  try {
-    const tokenResponse = await axios.post('https://login.rhosys.ch/api/authentication/github/tokens',
-      { client_id: 'fZqy3XNgvtAcKonjfAu9WF', grant_type: 'client_credentials' },
-      { headers: { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } }
-    );
-
-    aws.config.credentials = new aws.WebIdentityCredentials({
-      WebIdentityToken: tokenResponse.data.access_token,
-      RoleArn: `arn:aws:iam::${process.env.AWS_ACCOUNT_ID}:role/GitHubRunnerAssumedRole`,
-      RoleSessionName: `GitHubRunner-${process.env.GITHUB_REPOSITORY}-${process.env.GITHUB_RUN_NUMBER}`,
-      DurationSeconds: 3600
-    });
-  } catch (error) {
-    const loggedError = error.response && {
-      data: error.response.data,
-      status: error.response.status,
-      headers: error.response.headers,
-      config: error.config || error.response.config
-    } || error;
-    console.log('Failed to exchange token for AWS credentials:', JSON.stringify(loggedError, null, 2));
-    process.exit(1);
-  }
-
-  try {
-    const stsResult = await new aws.STS().getCallerIdentity().promise();
-    console.log('Configured AWS Credentials', stsResult);
-  } catch (error) {
-    console.log('Failed to setup credentials', error);
-    process.exit(1);
-  }
-}
 
 function getVersion() {
   let release_version = '0.0';
