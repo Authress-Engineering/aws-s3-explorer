@@ -12,6 +12,11 @@ const currentBucket = computed({
 watch(currentBucket, async () => {
   try {
     store.objects = await fetchBucketObjectsExplicit(store.currentDirectory);
+    // Sometimes the API just refuses to return real results the first time
+    if (!store.objects.length) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      store.objects = await fetchBucketObjectsExplicit(store.currentDirectory);
+    }
   } catch (error) {
     store.objects = [];
   }

@@ -152,6 +152,9 @@ onMounted(async () => {
 <style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
 
 <style lang="scss" scoped>
+.modal-body {
+  min-height: 400px;
+}
   ::v-deep(.multiselect__option--selected.multiselect__option--highlight) {
     background: #41b883 !important;
   }
