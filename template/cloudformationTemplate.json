@@ -70,7 +70,8 @@
         ],
         "PreventUserExistenceErrors": "ENABLED",
         "RefreshTokenValidity": 3650,
-        "UserPoolId": { "Ref": "CognitoUserPool" }
+        "UserPoolId": { "Ref": "CognitoUserPool" },
+        "SupportedIdentityProviders": ["COGNITO"]
       }
     },
 

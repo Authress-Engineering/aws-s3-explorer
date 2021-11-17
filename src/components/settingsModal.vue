@@ -43,9 +43,12 @@
                             style="flex-grow: 1; margin-right: 0.5rem; width: 200px;" maxlength="20">
                         </div>
                       </li>
-                      <br>
+                    </ol>
+                    <hr>
+                    <h4>[Optional] Connecting an SSO provider to Cognito:</h4>
+                    <ol>
                       <li>
-                        Next you'll connect your SSO Provider to Cognito, follow your provider's guide to create a new client. Set the <strong>Redirect URI</strong> property set it to be:<br>
+                        Follow your provider's guide to create a new client.<br>Set the <strong>Redirect URI</strong> property set it to be:<br>
                         <div class="input-group">
                           <input name="AWS AccountId" :value="`https://${store.awsAccountId || ''}-s3explorer.auth.${store.region}.amazoncognito.com/oauth2/idpresponse`"
                             type="text" class="form-control" placeholder="742482629247" required="true" style="flex-grow: 1;" :disabled="true">
@@ -64,7 +67,7 @@
                         Navigate to the newly created Cognito Pool and configure:
                         <ul>
                           <li><a :href="`${generatedCognitoPoolUrl}/federation-identity-providers`" target="_blank">
-                            Federation > Identity providers</a><br>Select an identity provider and fill in the credentials.
+                            Federation > Identity providers</a><br>Select your SSO identity provider and fill in the credentials.
                           </li>
                           <li><a :href="`${generatedCognitoPoolUrl}//app-integration-app-settings`" target="_blank">
                             App integration > App client settings > Enabled Identity Providers</a><br>Enable the new identity provider, that you just linked (then click <strong>Save</strong>)
