@@ -10,8 +10,10 @@
     },
     "HostedZoneId": {
       "Type": "String",
-      "Description": "[Optional] A Route53 hosted zone ID to use for a custom domain. The hosted zone is required to use the CustomDomain parameter. The Hosted Zone must match the custom domain top level origin. If the custom domain is console.example.com, then this hosted zone should have been configured for example.com",
-      "Default": "Z0000000000000"
+      "Description": "[Optional] A Route53 hosted zone ID to use for a custom domain. The hosted zone is required to use the CustomDomain parameter below. The Hosted Zone must match the custom domain top level origin. If the custom domain is console.example.com, then this hosted zone should have been configured for example.com",
+      "AllowedPattern": "^(Z[A-Za-z0-9]{8,20})?$",
+      "ConstraintDescription": "No Hosted Zone with that ID exists, hosted zone ids usually match 'Z[A-Za-z0-9]{13}",
+      "Default": ""
     }
   },
 
