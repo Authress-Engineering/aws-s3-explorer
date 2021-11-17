@@ -100,7 +100,7 @@ const state = reactive({
   suggestedCorsConfiguration: [{
     AllowedHeaders: ['*'],
     AllowedMethods: ['PUT', 'POST', 'DELETE', 'HEAD', 'GET'],
-    AllowedOrigins: ['https://rhosys.github.io', 'https://console.rhosys.ch'],
+    AllowedOrigins: [window.location.origin ?? 'https://console.rhosys.ch'],
     ExposeHeaders: ['x-amz-server-side-encryption', 'x-amz-request-id', 'x-amz-id-2'],
     MaxAgeSeconds: 3000
   }],

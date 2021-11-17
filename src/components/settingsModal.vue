@@ -105,29 +105,6 @@
                       </li>
                       <li>Return here and enter the Cognito user pool login URL, ID, and identity pool ID above.</li>
                     </ol>
-<!-- 
-                    <div class="input-group bottom-marg-10">
-                      <span class="input-group-addon">Region</span>
-                      <select name="region" class="form-control" v-model="state.region">
-                        <option value="ap-south-1">Asia Pacific (Mumbai)</option>
-                        <option value="ap-northeast-3">Asia Pacific (Osaka-Local)</option>
-                        <option value="ap-northeast-2">Asia Pacific (Seoul)</option>
-                        <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
-                        <option value="ap-southeast-2">Asia Pacific (Sydney)</option>
-                        <option value="ap-northeast-1">Asia Pacific (Tokyo)</option>
-                        <option value="ca-central-1">Canada (Central)</option>
-                        <option value="eu-central-1">EU (Frankfurt)</option>
-                        <option value="eu-west-1">EU (Ireland)</option>
-                        <option value="eu-west-2">EU (London)</option>
-                        <option value="eu-west-3">EU (Paris)</option>
-                        <option value="eu-north-1">EU (Stockholm)</option>
-                        <option value="sa-east-1">South America (São Paulo)</option>
-                        <option value="">US East (N. Virginia)</option>
-                        <option value="us-east-2">US East (Ohio)</option>
-                        <option value="us-west-1">US West (N. California)</option>
-                        <option value="us-west-2">US West (Oregon)</option>
-                      </select>
-                    </div> -->
                   </div>
                 </div>
               </div>
