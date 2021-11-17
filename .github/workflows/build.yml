@@ -6,7 +6,7 @@ on:
     - 'release/**'
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: read
   id-token: write
 
@@ -30,7 +30,7 @@ jobs:
       run: yarn build
 
     - name: Configure AWS Credentials
-      if: github.repository_owner == 'Rhosys'
+      if: github.repository_owner == 'Rhosys' && github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master'
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-region: eu-west-1
