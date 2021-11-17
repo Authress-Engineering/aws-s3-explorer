@@ -10,8 +10,8 @@
     },
     "HostedZoneId": {
       "Type": "String",
-      "Description": "The Route53 hosted zone ID to use for a custom domain. If the CustomDomain is specified, this is also required.",
-      "Default": ""
+      "Description": "[Optional] A Route53 hosted zone ID to use for a custom domain. The hosted zone is required to use the CustomDomain parameter. The Hosted Zone must match the custom domain top level origin. If the custom domain is console.example.com, then this hosted zone should have been configured for example.com",
+      "Default": "Z0000000000000"
     }
   },
 
