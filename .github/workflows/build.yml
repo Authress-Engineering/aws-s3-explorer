@@ -24,6 +24,7 @@ jobs:
 
     - name: Install packages
       run: yarn --frozen-lockfile
+
     - name: Run Setup
       run: yarn setup
     - name: Run build
@@ -31,19 +32,18 @@ jobs:
 
     - name: Configure AWS Credentials
       if: github.repository_owner == 'Rhosys' && github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master'
-      uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@036a4a1ddf2c0e7a782dca6e083c6c53e5d90321
       with:
         aws-region: eu-west-1
         role-duration-seconds: 3600
-        role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubRunnerAssumedRole`
-        role-session-name: GitHubRunner-${{ github.repository }}-${{ github.run_number }}
+        # role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubRunnerAssumedRole`
+        role-to-assume: arn:aws:iam::922723803004:role/GitHubRunnerAssumedRole
+        role-session-name: GitHubRunner-${{ github.repository_owner }}-${{ github.job }}-${{ github.run_number }}
     - name: After build
       if: github.repository_owner == 'Rhosys' && github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-        # AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        # AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       run: yarn after_build
     - name: Create Github Release and Tag
       if: github.repository_owner == 'Rhosys' && github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master'
