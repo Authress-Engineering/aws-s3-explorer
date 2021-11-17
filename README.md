@@ -27,7 +27,10 @@ Jump over to the [AWS S3 explorer configuration](https://rhosys.github.io/aws-s3
 
 This application allows visitors to view the contents of a bucket via its folders or by listing out all objects in a bucket. The default view is by folder, but users can choose Initial View: Bucket in Settings to display all objects in the bucket. Note that viewing an entire bucket that contains many objects could overwhelm the browser. We've successfully tested this application on a bucket with over 30,000 objects, but keep in mind that trying to list too many objects in a browser could lead to a poor user experience. -->
 
-## Screenshots
+## Troubleshooting
+If you run into any problems just try running through the suggested [Troubleshooting steps](./docs/troubleshooting.md) and if that doesn't help, [file an issue](https://github.com/Rhosys/aws-s3-explorer/issues), we are usually quick to respond.
+
+## Standard use cases:
 
 View all objects in folder:
 ![Folder selected screen](screenshots/explorer-folder.png)

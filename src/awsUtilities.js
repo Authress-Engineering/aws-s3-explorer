@@ -127,8 +127,6 @@ watch(awsAccountId, newAwsAccountId => {
   setConfiguration(newAwsAccountId);
 });
 
-const suggestedRegion = 'eu-west-1';
-
 export async function setConfiguration(newAwsAccountId) {
   DEBUG.log(`AccountID changed, updating configuration: ${newAwsAccountId}`);
   if (!newAwsAccountId) {
@@ -139,15 +137,22 @@ export async function setConfiguration(newAwsAccountId) {
   }
 
   if (store.awsAccountId) {
-    let configuration;
-    try {
-      const data = await fetch(`https://s3.${suggestedRegion}.amazonaws.com/s3-explorer.${store.awsAccountId}.${suggestedRegion}/configuration.json`);
-      configuration = await data.json();
-    } catch (error) {
+    const regions = ['eu-north-1', 'ap-south-1', 'eu-west-3', 'eu-west-2', 'eu-west-1', 'ap-northeast-3', 'ap-northeast-2', 'ap-northeast-1', 'sa-east-1', 'ca-central-1', 'ap-southeast-1',
+      'ap-southeast-2', 'eu-central-1', 'us-east-1', 'us-east-2', 'us-west-1', 'us-west-2'];
+    const configurationList = await Promise.all(regions.map(async region => {
       try {
-        const data = await fetch(`https://s3.${suggestedRegion}.amazonaws.com/s3-explorer.${store.awsAccountId}/configuration.json`);
+        const data = await fetch(`https://s3.${region}.amazonaws.com/s3-explorer.${store.awsAccountId}${region ? '.' : ''}${region || ''}/configuration.json`);
+        return await data.json();
+      } catch (error) {
+        return null;
+      }
+    }));
+    let configuration = configurationList.find(c => c);
+    if (!configuration) {
+      try {
+        const data = await fetch(`https://s3.eu-west-1.amazonaws.com/s3-explorer.${store.awsAccountId}/configuration.json`);
         configuration = await data.json();
-      } catch (retryError) {
+      } catch (error) {
         DEBUG.log('Failed to load configuration', error);
         bootbox.alert(`Error looking up account configuration: ${error.message}`);
         return;
