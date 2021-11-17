@@ -9,8 +9,12 @@ const currentBucket = computed({
     return store.currentBucket;
   }
 });
-watch(currentBucket, () => {
-  fetchBucketObjects();
+watch(currentBucket, async () => {
+  try {
+    store.objects = await fetchBucketObjectsExplicit(store.currentDirectory);
+  } catch (error) {
+    store.objects = [];
+  }
 });
 
 export async function fetchBucketObjects() {
@@ -48,10 +52,16 @@ export async function fetchBucketObjectsExplicit(directory, findAllMatching = fa
 }
 
 export async function validateConfiguration(bucket) {
-  const s3client = new AWS.S3({ maxRetries: 0, region: store.region });
+  const s3client = new AWS.S3({ maxRetries: 0 });
   try {
     await s3client.getBucketCors({ Bucket: bucket }).promise();
   } catch (err) {
+    try {
+      await fetchBucketObjectsExplicit();
+      return;
+    } catch (error) {
+      /** Ignore this fallback failure */
+    }
     if (err && err.code === 'NetworkingError') {
       throw Error('CORS');
     }

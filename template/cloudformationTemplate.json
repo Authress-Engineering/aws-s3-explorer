@@ -5,12 +5,12 @@
   "Parameters": {
     "CustomDomain": {
       "Type": "String",
-      "Description": "A custom domain to host the Explorer on, specifying this value will deploy a TLS cert, a CloudFront distribution, and Route53 records. The default location is https://console.rhosys.ch.",
+      "Description": "A custom domain to host the Explorer on, specifying this value will deploy a TLS cert, a CloudFront distribution, and Route53 records. The default location is https://console.rhosys.ch. Do not include https:// in this string value. Pattern: console.example.com",
       "Default": "console.rhosys.ch"
     },
     "HostedZoneId": {
       "Type": "String",
-      "Description": "[Optional] A Route53 hosted zone ID to use for a custom domain. The hosted zone is required to use the CustomDomain parameter below. The Hosted Zone must match the custom domain top level origin. If the custom domain is console.example.com, then this hosted zone should have been configured for example.com",
+      "Description": "[Optional] A Route53 hosted zone ID to use for a custom domain. The hosted zone is required to use the CustomDomain parameter below. The Hosted Zone must match the custom domain top level origin. If the custom domain is console.example.com, then this hosted zone should have been configured for example.com, Pattern: Z0000000000",
       "AllowedPattern": "^(Z[A-Za-z0-9]{8,20})?$",
       "ConstraintDescription": "No Hosted Zone with that ID exists, hosted zone ids usually match 'Z[A-Za-z0-9]{13}",
       "Default": ""
@@ -162,7 +162,7 @@
               "Version": "2012-10-17",
               "Statement": [
                 {
-                  "Sid": "DynamoDbWrite",
+                  "Sid": "S3Access",
                   "Effect": "Allow",
                   "Action": ["s3:*"],
                   "Resource": ["*"]

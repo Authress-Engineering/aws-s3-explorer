@@ -4,7 +4,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" @click="closeModal">&times;</button>
-          <h4 class="modal-title">S3 Explorer: Delete {{trash.count}} objects</h4>
+          <h4 class="modal-title">S3 Explorer: Delete {{ trash.count }} objects</h4>
         </div>
         <div class="modal-body">
           <div class="col-md-18">
@@ -12,12 +12,12 @@
               <p>
               Please confirm that you want to delete the following objects from S3.
               <br>
-              <span>Current Bucket: <strong>{{store.currentBucket}}</strong></span><br><br>
+              <span>Current Bucket: <strong>{{ store.currentBucket }}</strong></span><br><br>
               </p>
               <table class="table table-bordered table-hover table-striped" id="trash-table">
                 <thead id="trash-thead">
                   <tr>
-                    <th></th>
+                    <th />
                     <th>Object</th>
                     <th>Last Modified</th>
                     <th>Class</th>
@@ -27,16 +27,16 @@
                 </thead>
                 <tbody id="trash-tbody">
                   <tr v-for="(o, index) in objects" :key="o.key">
-                    <td>{{index + 1}}</td>
-                    <td><i v-if="o.type === 'DIRECTORY'" class="fas fa-folder" style="margin-right: 1rem" />{{o.key}}</td>
-                    <td>{{o.lastModified}}</td>
-                    <td>{{o.storageClass}}</td>
+                    <td>{{ index + 1 }}</td>
+                    <td><i v-if="o.type === 'DIRECTORY'" class="fas fa-folder" style="margin-right: 1rem" />{{ o.key }}</td>
+                    <td>{{ o.lastModified }}</td>
+                    <td>{{ o.storageClass }}</td>
                     <td>{{ formatByteSize(o.size) }}</td>
                     <td>
                       <span v-if="trash.objectStatus[o.key] === 'DENIED'" class="trasherror">Access Denied</span>
                       <span v-else-if="trash.objectStatus[o.key] === 'DELETED'" class="trashdeleted">Deleted</span>
                       <span v-else-if="trash.objectStatus[o.key]" class="trasherror">{{ trash.objectStatus[o.key] }}</span>
-                      <i v-else></i>
+                      <i v-else />
                     </td>
                   </tr>
                 </tbody>
@@ -50,7 +50,7 @@
               <button type="button" class="btn btn-default" @click="closeModal">{{ objectsRemaining ? 'Cancel' : 'Close' }}</button>
               
               <button v-if="trash.trashing || objectsRemaining" type="button" class="btn btn-danger" @click="deleteFiles(props.selectedKeys, store.objects)" :disabled="trash.trashing">
-                <i class="fa fa-trash-alt fa-lg"></i> {{ deleteButtonText }}
+                <i class="fa fa-trash-alt fa-lg" /> {{ deleteButtonText }}
               </button>
             </div>
           </div>
@@ -61,7 +61,7 @@
 </template>
 
 <script setup>
-import { reactive, onMounted, computed } from 'vue'
+import { reactive, onMounted, computed } from 'vue';
 import DEBUG from '../logger';
 import { formatByteSize } from '../converters';
 import store from '../store';
@@ -69,15 +69,17 @@ import { fetchBucketObjectsExplicit } from '../bucketManager';
 
 const trash = reactive({ title: null, trashing: false, objectStatus: {} });
 
+// eslint-disable-next-line no-undef
 const props = defineProps({
   selectedKeys: Array
 });
 
+// eslint-disable-next-line no-undef
 const emit = defineEmits(['trashCompleted']);
 
 onMounted(() => {
   store.deletedObjects = {};
-}); 
+});
 
 const objects = computed(() => {
   const keyMap = props.selectedKeys?.reduce((acc, key) => { acc[key] = true; return acc; }, {});
@@ -95,7 +97,7 @@ const closeModal = () => {
   store.objects = store.objects.filter(o => !store.deletedObjects[o.key]);
   emit('trashCompleted');
   store.showTrash = false;
-}
+};
 
 const deleteFiles = async (keys, objectMetadataList, recursion) => {
   DEBUG.log('Delete file count:', keys.length);

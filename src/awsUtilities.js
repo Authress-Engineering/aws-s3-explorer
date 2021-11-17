@@ -4,30 +4,6 @@ import DEBUG from './logger';
 import store from './store';
 import jwtManager from './jwtManager';
 
-export function correctClockSkew(Bucket) {
-  DEBUG.log('Invoke headBucket:', Bucket);
-
-  // Head the bucket to get a Date response. The 'date' header will need
-  // to be exposed in S3 CORS configuratio
-  const s3client = new AWS.S3({ region: store.region });
-  s3client.headBucket({ Bucket }, (err, data) => {
-    if (err) {
-      DEBUG.log('headBucket error:', err);
-    } else {
-      DEBUG.log('headBucket data:', JSON.stringify(data));
-      DEBUG.log('headBucket headers:', JSON.stringify(this.httpResponse.headers));
-
-      if (this.httpResponse.headers.date) {
-        const date = Date.parse(this.httpResponse.headers.date);
-        DEBUG.log('headers date:', date);
-        AWS.config.systemClockOffset = new Date() - date;
-        DEBUG.log('clock offset:', AWS.config.systemClockOffset);
-        // Can now safely generate presigned urls
-      }
-    }
-  });
-}
-
 const sha256 = str => crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
 
 const generateNonce = async () => {
@@ -148,6 +124,7 @@ export async function setConfiguration(newAwsAccountId) {
       }
     }));
     let configuration = configurationList.find(c => c);
+
     if (!configuration) {
       try {
         const data = await fetch(`https://s3.eu-west-1.amazonaws.com/s3-explorer.${store.awsAccountId}/configuration.json`);
