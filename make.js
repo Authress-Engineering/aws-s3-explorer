@@ -10,6 +10,7 @@ const AwsArchitect = require('aws-architect');
 
 aws.config.update({ region: 'eu-west-1' });
 
+// eslint-disable-next-line no-unused-vars
 async function setupAWS() {
   if (!process.env.GITHUB_TOKEN || process.env.AWS_ACCESS_KEY_ID) { return; }
   try {
@@ -91,7 +92,6 @@ commander
     console.log('After build package %s (%s)', packageMetadata.name, version);
     console.log('');
     // githubActionsRunner.MergeDownstream('release/', 'main');
-    await setupAWS();
 
     const apiOptions = {
       deploymentBucket: 's3-explorer-public-data'

@@ -24,22 +24,29 @@ jobs:
     - name: Run build
       run: yarn build
 
+    - name: Configure AWS Credentials
+      if: github.repository_owner == 'Rhosys'
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-region: eu-west-1
+        role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubRunnerAssumedRole`
+        role-session-name: GitHubRunner-${{ github.repository }}-${{ github.run_number }}
     - name: After build
-      if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master'
+      if: github.repository_owner == 'Rhosys' && github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        # AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        # AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       run: yarn after_build
     - name: Create Github Release and Tag
-      if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master'
+      if: github.repository_owner == 'Rhosys' && github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master'
       run: |
         git tag ${GITHUB_REF/refs\/heads\/release\//}.$GITHUB_RUN_NUMBER
         git push origin ${GITHUB_REF/refs\/heads\/release\//}.$GITHUB_RUN_NUMBER
     - name: deploy build to github
       uses: JamesIves/github-pages-deploy-action@4.1.4
-      if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master'
+      if: github.repository_owner == 'Rhosys' && github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master'
       with:
         branch: production
         folder: dist
