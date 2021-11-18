@@ -64,14 +64,12 @@
         "AllowedOAuthFlowsUserPoolClient": true,
         "AllowedOAuthScopes": ["phone", "email", "openid", "profile", "aws.cognito.signin.user.admin"],
         "CallbackURLs": [
+          { "Fn::Sub": "https://${CustomDomain}" },
+          { "Fn::Sub": "https://${CustomDomain}/" },
           "http://localhost:8080",
           "http://localhost:8080/",
           "https://console.rhosys.ch",
-          "https://console.rhosys.ch/",
-          { "Fn::Sub": "https://${CustomDomain}" },
-          { "Fn::Sub": "https://${CustomDomain}/" },
-          "https://rhosys.github.io/aws-s3-explorer",
-          "https://rhosys.github.io/aws-s3-explorer/"
+          "https://console.rhosys.ch/"
         ],
         "ClientName": "S3 Explorer UI",
         "DefaultRedirectURI": { "Fn::Sub": "https://${CustomDomain}/" },
@@ -80,14 +78,12 @@
         "GenerateSecret": false,
         "IdTokenValidity": 24,
         "LogoutURLs": [
+          { "Fn::Sub": "https://${CustomDomain}" },
+          { "Fn::Sub": "https://${CustomDomain}/" },
           "http://localhost:8080",
           "http://localhost:8080/",
           "https://console.rhosys.ch",
-          "https://console.rhosys.ch/",
-          { "Fn::Sub": "https://${CustomDomain}" },
-          { "Fn::Sub": "https://${CustomDomain}/" },
-          "https://rhosys.github.io/aws-s3-explorer",
-          "https://rhosys.github.io/aws-s3-explorer/"
+          "https://console.rhosys.ch/"
         ],
         "PreventUserExistenceErrors": "ENABLED",
         "RefreshTokenValidity": 3650,
@@ -183,7 +179,7 @@
             {
               "AllowedHeaders": ["*"],
               "AllowedMethods": ["PUT", "POST", "DELETE", "HEAD", "GET"],
-              "AllowedOrigins": ["http://localhost:8080", "https://console.rhosys.ch", "https://rhosys.github.io", { "Fn::Sub": "https://${CustomDomain}" }],
+              "AllowedOrigins": [{ "Fn::Sub": "https://${CustomDomain}" }, "https://console.rhosys.ch", "http://localhost:8080"],
               "ExposedHeaders": ["x-amz-request-id"],
               "MaxAge": 3600
             }

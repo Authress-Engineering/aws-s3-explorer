@@ -76,36 +76,6 @@
                       </li>
                     </ol>
                   </div>
-
-                  <div v-if="false">
-                    <h4>Setup Cognito SSO Login</h4>
-                    Or setup up a cognito pool, cognito identity pool, and configure the explorer.
-                    <ol>
-                      <li>
-                        Cognito User Pool:
-                          <ul>
-                            <li>Create a User Pool in any region (Not an identity pool)</li>
-                            <li>Since we will use SSO, most of the configuration is irrelevant</li>
-                            <!-- <li><strong>General settings > Users and Groups > Groups</strong> > Update the auto generated group with a role that has access to the necessary buckets</li> -->
-                            <li><strong>General settings > App clients</strong> > Add the S3 Explorer as an app</li>
-                            <li><strong>Federation > Identity providers</strong> > Add your SSO provider of choice to the OAuth settings</li>
-                            <li><strong>App Integration > App client settings</strong> > Enable identity provider just created</li>
-                            <li>Specify <strong>https://rhosys.github.io/aws-s3-explorer/</strong> as the callback and logout urls</li>
-                            <li>Specify <strong>Authorization code grant</strong> flow and enable All <strong>Allowed OAuth Scopes</strong></li>
-                            <li><strong>App Integration > Domain name</strong> > Configure the setup for a domain (either Cognito or your own custom one.</li>
-                          </ul>
-                      </li>
-                      <li>
-                        Cognito Identity Pool:
-                          <ul>
-                            <li>Create an identity pool in the same region as the user pool</li>
-                            <li>Create a role which the pool can assume that has access to the relevant S3 resources.</li>
-                            <li>Specify the Cognito Pool from the previous step as the Authentication Provider</li>
-                          </ul>
-                      </li>
-                      <li>Return here and enter the Cognito user pool login URL, ID, and identity pool ID above.</li>
-                    </ol>
-                  </div>
                 </div>
               </div>
             </div>
