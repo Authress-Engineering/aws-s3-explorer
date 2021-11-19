@@ -23,7 +23,7 @@
             <!-- Record count -->
             <div v-if="store.tokens && store.currentBucket">
               <div class="btn-group" v-if="selectedKeysCount === 0">
-                <span id="badgecount" style="cursor: default;" class="btn badge " title="Object count">{{ store.objects.length }} {{ store.objects.length > 1 ? 'objects' : 'object' }}</span>
+                <span id="badgecount" style="cursor: default;" class="btn badge " title="Object count">{{ store.objects.length }} {{ store.objects.length !== 1 ? 'objects' : 'object' }}</span>
               </div>
               <!-- Record/checked count -->
               <div class="btn-group" v-if="selectedKeysCount > 0">
@@ -185,7 +185,7 @@ const logout = () => {
   if (store.tokens) {
     store.tokens = null;
     const redirectUri = `${window.location.origin}${window.location.pathname}`;
-    window.location = `${store.applicationLoginUrl}/logout?client_id=${store.applicationClientId}&logout_uri=${redirectUri}`;
+    window.location = store.applicationLoginUrl ? `${store.applicationLoginUrl}/logout?client_id=${store.applicationClientId}&logout_uri=${redirectUri}` : window.location.origin;
     return;
   }
 
@@ -206,12 +206,21 @@ onMounted(async () => {
     await login();
 
     try {
+      if (!store.currentBucket && !store.tokens) {
+        throw Error('ForceSettingsOnNoBucketSelected');
+      }
       await fetchBucketObjects();
     } catch (error) {
       DEBUG.log('Fetching Bucket Objects Error: ', error);
+      store.showBucketSelector = false;
+      store.showSettings = true;
+      store.loggedOut = true;
+      store.objects = [];
+      store.currentBucket = null;
+      return;
     }
 
-    if (!store.rememberedBuckets.length && !store.showSettings) {
+    if (!store.rememberedBuckets.length && !store.showSettings || !store.currentBucket) {
       store.showBucketSelector = true;
     }
   }

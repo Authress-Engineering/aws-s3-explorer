@@ -202,11 +202,20 @@
           "Version": "2012-10-17",
           "Statement": [
             {
-              "Sid": "Grant read access to S3 Explorer configuration to users.",
+              "Sid": "Grant read access to S3 Explorer configuration.",
               "Effect": "Allow",
               "Principal": "*",
               "Action": "s3:GetObject",
-              "Resource": { "Fn::Sub": "${BucketForS3ExplorerSavedConfiguration.Arn}/configuration.json" }
+              "Resource": { "Fn::Sub": "${BucketForS3ExplorerSavedConfiguration.Arn}/*" }
+            },
+            {
+              "Sid":"Grant a CloudFront access to the configuration data",
+              "Effect":"Allow",
+              "Principal":{
+                "CanonicalUser": { "Fn::GetAtt": [ "CloudFrontOriginAccessIdentity", "S3CanonicalUserId" ] }
+              },
+              "Action":"s3:GetObject",
+              "Resource": { "Fn::Sub": "arn:aws:s3:::s3-explorer.${AWS::AccountId}.${AWS::Region}/*" }
             }
           ]
         }
@@ -312,7 +321,7 @@
                 {
                   "Action": ["s3:PutObject", "s3:DeleteObject"],
                   "Effect": "Allow",
-                  "Resource": [{ "Fn::Sub": "${BucketForS3ExplorerSavedConfiguration.Arn}/configuration.json" }]
+                  "Resource": [{ "Fn::Sub": "${BucketForS3ExplorerSavedConfiguration.Arn}/*" }]
                 }
               ],
               "Version": "2012-10-17"
@@ -355,6 +364,13 @@
                 "OriginProtocolPolicy": "https-only",
                 "OriginSSLProtocols": ["TLSv1.2"]
               }
+            },
+            {
+              "DomainName": { "Fn::Sub": "${BucketForS3ExplorerSavedConfiguration.DomainName}" },
+              "Id": "Configuration",
+              "S3OriginConfig": {
+                "OriginAccessIdentity": { "Fn::Sub": "origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentity}" }
+              }
             }
           ],
           "Enabled": true,
@@ -372,6 +388,15 @@
             "TargetOriginId": "DefaultConsole",
             "ViewerProtocolPolicy": "redirect-to-https"
           },
+          "CacheBehaviors": [{
+            "AllowedMethods": ["GET", "HEAD", "OPTIONS"],
+            "Compress": true,
+            "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+            "OriginRequestPolicyId": "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf",
+            "PathPattern": "configuration*",
+            "TargetOriginId": "Configuration",
+            "ViewerProtocolPolicy": "redirect-to-https"
+          }],
           "CustomErrorResponses": [
             {
               "ErrorCode": 403,
@@ -393,6 +418,15 @@
             "Value": "S3 Explorer Configuration"
           }
         ]
+      }
+    },
+
+    "CloudFrontOriginAccessIdentity": {
+      "Type": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+      "Properties": {
+        "CloudFrontOriginAccessIdentityConfig": {
+          "Comment": "S3 Explorer"
+        }
       }
     },
 
