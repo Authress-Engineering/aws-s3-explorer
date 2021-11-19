@@ -155,8 +155,7 @@ export async function setConfiguration(newAwsAccountId) {
         const data = await fetch(`https://s3.eu-west-1.amazonaws.com/s3-explorer.${store.awsAccountId}/configuration.json`);
         configuration = await data.json();
       } catch (error) {
-        DEBUG.log('Failed to load configuration', error);
-        bootbox.alert(`Error looking up account configuration: ${error.message}`);
+        DEBUG.log('Failed to load configuration:', error);
         return;
       }
     }

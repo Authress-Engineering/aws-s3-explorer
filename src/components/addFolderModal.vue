@@ -57,7 +57,7 @@ const addFolder = async () => {
   DEBUG.log('Calculated directory:', folder);
 
   if (store.objects.find(o => o.key === folder && o.type === 'DIRECTORY')) {
-    bootbox.alert(`Error: folder or object already exists at: ${folder}`);
+    DEBUG.log(`Error: folder or object already exists at: ${folder}`);
     return;
   }
 
@@ -70,12 +70,12 @@ const addFolder = async () => {
     DEBUG.log('Directory already exists, skipping creation');
   } catch (err1) {
     if (!err1) {
-      bootbox.alert(`Error: directory or object already exists at: ${folder}`);
+      DEBUG.log(`Error: directory or object already exists at: ${folder}`);
       return;
     }
 
     if (err1 && err1.code !== 'NotFound') {
-      bootbox.alert(`Error checking existence of folder: ${err1}`);
+      DEBUG.log(`Error checking existence of folder: ${err1}`);
       return;
     }
 
@@ -83,8 +83,7 @@ const addFolder = async () => {
     try {
       await s3client.putObject(params).promise();
     } catch (err2) {
-      DEBUG.log('putObject error:', err2);
-      bootbox.alert(`Error creating folder: ${err2}`);
+      DEBUG.log(`Error creating folder: ${err2}`);
       return;
     }
   }
