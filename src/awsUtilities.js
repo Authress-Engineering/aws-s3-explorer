@@ -111,6 +111,7 @@ async function setConfigurationFromCustomDomain() {
     try {
       const data = await fetch(new URL('/configuration.json', window.location.href).toString());
       const configuration = await data.json();
+      DEBUG.log('Setting configuration from custom domain.');
       store.applicationClientId = configuration.applicationClientId;
       store.identityPoolId = configuration.identityPoolId;
       store.cognitoPoolId = configuration.cognitoPoolId;
@@ -119,6 +120,7 @@ async function setConfigurationFromCustomDomain() {
       store.autoLoginIn = true;
       return true;
     } catch (error) {
+      DEBUG.log('Failed setting configuration for custom domain: ', error);
       return false;
     }
   }
