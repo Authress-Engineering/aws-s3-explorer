@@ -5,7 +5,7 @@
   "Parameters": {
     "CustomDomain": {
       "Type": "String",
-      "Description": "A custom domain to host the Explorer on, specifying this value will deploy a TLS cert, a CloudFront distribution, and Route53 records. The default location is https://console.rhosys.ch. Do not include https:// in this string value. Pattern: console.example.com",
+      "Description": "[Optional] A custom domain to host the Explorer on, specifying this value will deploy a TLS cert, a CloudFront distribution, and Route53 records. Do not include https:// in this string value. Pattern: console.example.com. The default deployed location is https://console.rhosys.ch.",
       "Default": ""
     },
     "HostedZoneId": {
@@ -446,21 +446,9 @@
   },
 
   "Outputs": {
-    "CognitoPoolId": {
-      "Description": "Cognito Pool ID",
-      "Value": { "Ref": "CognitoUserPool" }
-    },
-    "LoginUrl": {
-      "Description": "Login URL",
-      "Value": { "Ref": "CognitoLoginUiConfiguration" }
-    },
-    "ApplicationClientId": {
-      "Description": "Application Client ID",
-      "Value": { "Ref": "S3ExplorerCognitoApplicationClient" }
-    },
-    "IdentityPoolId": {
-      "Description": "Identity Pool ID",
-      "Value": { "Ref": "CognitoIdentityPool" }
+    "ConsoleUrl": {
+      "Description": "S3 Explorer deployed location, set using the 'CustomDomain' parameter. Defaults to: https://console.rhosys.ch",
+      "Value": { "Fn::If": ["DeployCustomDomain", { "Fn::Sub": "https://${CustomDomain}" }, "https://console.rhosys.ch"] }
     }
   }
 }
