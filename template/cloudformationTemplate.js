@@ -246,7 +246,8 @@ module.exports = {
         LoginUrl: { Ref: 'CognitoLoginUiConfiguration' },
         ApplicationClientId: { Ref: 'S3ExplorerCognitoApplicationClient' },
         IdentityPoolId: { Ref: 'CognitoIdentityPool' },
-        AwsAccountId: { Ref: 'AWS::AccountId' }
+        AwsAccountId: { Ref: 'AWS::AccountId' },
+        CustomDomain: { Ref: 'CustomDomain' }
       }
     },
     AWSLambdaFunction: {
@@ -273,6 +274,7 @@ module.exports = {
                 '  let applicationClientId = event.ResourceProperties.ApplicationClientId;',
                 '  let identityPoolId = event.ResourceProperties.IdentityPoolId;',
                 '  let awsAccountId = event.ResourceProperties.AwsAccountId;',
+                '  let customDomain = event.ResourceProperties.CustomDomain;',
                 '  let s3client = new aws.S3();',
                 "  if (event.RequestType === 'Delete') {",
                 "    s3client.deleteObject({ Bucket: bucketName, Key: 'configuration.json' }).promise()",
@@ -284,7 +286,7 @@ module.exports = {
                 '      });',
                 '    return;',
                 '  } ',
-                "  s3client.putObject({ Bucket: bucketName, Key: 'configuration.json', Body: Buffer.from(JSON.stringify({ cognitoPoolId, applicationLoginUrl, applicationClientId, awsAccountId, identityPoolId })), ContentType: 'application/json' }).promise()",
+                "  s3client.putObject({ Bucket: bucketName, Key: 'configuration.json', Body: Buffer.from(JSON.stringify({ cognitoPoolId, applicationLoginUrl, applicationClientId, customDomain, awsAccountId, identityPoolId })), ContentType: 'application/json' }).promise()",
                 '    .then(() => {',
                 "      cloudFormationResponseHandler.send(event, context, cloudFormationResponseHandler.SUCCESS, { title: 'Configuration updated' });",
                 '    })',
