@@ -5,7 +5,7 @@ module.exports = {
   Parameters: {
     CustomDomain: {
       Type: 'String',
-      Description: '[Optional] A custom domain to host the Explorer on, specifying this value will deploy a TLS cert, a CloudFront distribution, and Route53 records. Do not include https:// in this string value. Pattern: console.example.com. The default deployed location is https://console.rhosys.ch.',
+      Description: '[Optional] A custom domain to host the Explorer on, specifying this value will deploy a TLS cert, a CloudFront distribution, and Route53 records. The App MUST Be deployed in us-east-1 due to limitations in CloudFront. Do not include https:// in this string value. Pattern: console.example.com. The default deployed location is https://console.rhosys.ch.',
       Default: ''
     },
     HostedZoneId: {
@@ -19,6 +19,16 @@ module.exports = {
 
   Conditions: {
     DeployCustomDomain: { 'Fn::Not': [{ 'Fn::Equals': [{ Ref: 'CustomDomain' }, ''] }] }
+  },
+
+  Rules: {
+    CustomDomainAwsRegion: {
+      RuleCondition: { 'Fn::Not': [{ 'Fn::Equals': [{ Ref: 'CustomDomain' }, ''] }] },
+      Assertions: [{
+        AssertDescription: 'When using a custom domain, CloudFront requires the region is set US-EAST-1 for certification creation to work.',
+        Assert: { 'Fn::Equals': [{ Ref: 'AWS::Region' }, 'us-east-1'] }
+      }]
+    }
   },
 
   Resources: {
