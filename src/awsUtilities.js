@@ -69,10 +69,12 @@ export async function login(forceLogin) {
   }
 
   DEBUG.log('Validating login parameters');
-  if (!store.awsAccountId || !store.applicationLoginUrl || !store.applicationClientId || !store.identityPoolId) {
-    DEBUG.log('Missing required parameter for login', store.awsAccountId, store.applicationLoginUrl, store.applicationClientId, store.identityPoolId);
-    store.showSettings = true;
-    return;
+  if (!await setConfigurationFromCustomDomain()) {
+    if (!store.awsAccountId || !store.applicationLoginUrl || !store.applicationClientId || !store.identityPoolId) {
+      DEBUG.log('Missing required parameter for login', store.awsAccountId, store.applicationLoginUrl, store.applicationClientId, store.identityPoolId);
+      store.showSettings = true;
+      return;
+    }
   }
 
   try {
@@ -104,6 +106,24 @@ watch(awsAccountId, newAwsAccountId => {
   setConfiguration(newAwsAccountId);
 });
 
+async function setConfigurationFromCustomDomain() {
+  if (window.location.hostname !== 'localhost' && window.location.hostname !== 'console.rhosys.ch') {
+    try {
+      const data = await fetch(new URL('/configuration.json', window.location.href).toString());
+      const configuration = await data.json();
+      store.applicationClientId = configuration.applicationClientId;
+      store.identityPoolId = configuration.identityPoolId;
+      store.cognitoPoolId = configuration.cognitoPoolId;
+      store.region = store.identityPoolId.split(':')[0];
+      store.applicationLoginUrl = `https://${configuration.applicationLoginUrl}.auth.${store.region}.amazoncognito.com`;
+      store.autoLoginIn = true;
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+  return false;
+}
 export async function setConfiguration(newAwsAccountId) {
   DEBUG.log(`AccountID changed, updating configuration: ${newAwsAccountId}`);
   if (!newAwsAccountId) {
@@ -113,8 +133,12 @@ export async function setConfiguration(newAwsAccountId) {
     return;
   }
 
-  if (store.awsAccountId) {
-    let configuration;
+  if (await setConfigurationFromCustomDomain()) {
+    return;
+  }
+
+  let configuration;
+  if (newAwsAccountId) {
     if (window.location.hostname !== 'localhost' && window.location.hostname !== 'console.rhosys.ch') {
       try {
         const data = await fetch(new URL('/configuration.json', window.location.href).toString());
@@ -127,7 +151,7 @@ export async function setConfiguration(newAwsAccountId) {
       const weightedRegions = ['eu-west-1', 'us-east-1'];
       const configurationList = await Promise.all(weightedRegions.map(async region => {
         try {
-          const data = await fetch(`https://s3.${region}.amazonaws.com/s3-explorer.${store.awsAccountId}${region ? '.' : ''}${region || ''}/configuration.json`);
+          const data = await fetch(`https://s3.${region}.amazonaws.com/s3-explorer.${newAwsAccountId}${region ? '.' : ''}${region || ''}/configuration.json`);
           return await data.json();
         } catch (error) {
           return null;
@@ -141,7 +165,7 @@ export async function setConfiguration(newAwsAccountId) {
         'ap-southeast-2', 'eu-central-1', 'us-east-2', 'us-west-1', 'us-west-2'];
       const configurationList = await Promise.all(regions.map(async region => {
         try {
-          const data = await fetch(`https://s3.${region}.amazonaws.com/s3-explorer.${store.awsAccountId}${region ? '.' : ''}${region || ''}/configuration.json`);
+          const data = await fetch(`https://s3.${region}.amazonaws.com/s3-explorer.${newAwsAccountId}${region ? '.' : ''}${region || ''}/configuration.json`);
           return await data.json();
         } catch (error) {
           return null;
@@ -152,14 +176,16 @@ export async function setConfiguration(newAwsAccountId) {
 
     if (!configuration) {
       try {
-        const data = await fetch(`https://s3.eu-west-1.amazonaws.com/s3-explorer.${store.awsAccountId}/configuration.json`);
+        const data = await fetch(`https://s3.eu-west-1.amazonaws.com/s3-explorer.${newAwsAccountId}/configuration.json`);
         configuration = await data.json();
       } catch (error) {
         DEBUG.log('Failed to load configuration:', error);
         return;
       }
     }
+  }
 
+  if (configuration) {
     DEBUG.log('Configuration for account fetched:', configuration);
     store.applicationClientId = configuration.applicationClientId;
     store.identityPoolId = configuration.identityPoolId;
