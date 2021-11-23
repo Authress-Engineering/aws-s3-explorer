@@ -43,7 +43,7 @@ export async function fetchBucketObjectsExplicit(directory, findAllMatching = fa
 
   const s3client = new AWS.S3({ maxRetries: 0, region: store.region });
   const params = {
-    Bucket: store.currentBucket.trim(),
+    Bucket: store.currentBucket.trim().toLowerCase(),
     Delimiter: findAllMatching ? undefined : store.delimiter,
     Prefix: directory ? (directory !== store.delimiter ? `${directory}/` : directory) : undefined,
     RequestPayer: 'requester'

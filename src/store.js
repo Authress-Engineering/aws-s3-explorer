@@ -23,6 +23,7 @@ const store = reactive(Object.assign({
   autoLoginIn: false
 }, storedData, {
   initialized: false,
+  globalLoader: true,
   loggedOut: false,
   showBucketSelector: false,
   showSettings: false,

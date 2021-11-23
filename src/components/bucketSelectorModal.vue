@@ -131,7 +131,7 @@ const bucketSelected = async (bucket, skipClose) => {
 };
 
 const newBucketEntered = newBucketRaw => {
-  const newBucket = newBucketRaw && newBucketRaw.trim();
+  const newBucket = newBucketRaw && newBucketRaw.trim().toLowerCase();
   store.rememberedBuckets.push({ bucket: newBucket });
   store.currentBucket = newBucket;
   bucketSelected(newBucket);

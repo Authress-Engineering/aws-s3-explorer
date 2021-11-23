@@ -62,7 +62,7 @@ const addFolder = async () => {
   }
 
   const s3client = new AWS.S3(AWS.config);
-  const params = { Bucket: store.currentBucket, Key: `${folder}${store.delimiter}` };
+  const params = { Bucket: store.currentBucket.trim().toLowerCase(), Key: `${folder}${store.delimiter}` };
 
   // Test if an object with this key already exists
   try {

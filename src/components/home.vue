@@ -1,8 +1,8 @@
 <template>
   <DropzoneWrapper @fileAdded="fileAdded">
     <div class="col-12" style="display: flex; flex-direction: column; flex-wrap: nowrap;">
-      <div class="panel panel-primary" style="flex-grow: 1">
 
+      <div class="panel panel-primary" style="flex-grow: 1">
         <!-- Panel including bucket/folder information and controls -->
         <div class="panel-heading" style="display: flex; direction: row; align-items: center; justify-content: space-between;">
 
@@ -44,73 +44,78 @@
           </div>
         </div>
 
-        <!-- Panel including S3 object table -->
-        <div class="panel-body" style="overflow: auto">
-
-          <div v-if="store.tokens && store.currentBucket" style="display: flex; align-items: center; justify-content: space-between">
-            <div>
-              <span><a href="#" @click="exploreDirectory(null)">{{ store.currentBucket }}</a></span>&nbsp;/&nbsp;
-              <span v-for="(part, partIndex) in pathParts" :key="part">
-                <a :style="{ 'text-decoration': partIndex + 1 === pathParts.length ? 'none' : undefined, color: partIndex + 1 === pathParts.length ? 'unset' : undefined, cursor: partIndex + 1 === pathParts.length ? 'unset' : 'pointer' }"
-                  :href="`#path=${pathParts.slice(0, partIndex + 1).join(store.delimiter)}`" @click="exploreDirectory(pathParts.slice(0, partIndex + 1).join(store.delimiter))">
-                  {{ part.length > 30 ? `${part.slice(0, 30)}…` : part }}
-                </a>&nbsp;/&nbsp;
-              </span>
-            </div>
-            <div style="flex-shrink: 0; flex-grow: 1; display: flex; flex-direction: row; flex-wrap: no-wrap; justify-content: flex-end">
-              <button type="button" style="cursor: pointer; margin-left: 0.5rem" class="text-primary btn btn-xs btn-warning"
-                :disabled="!selectedKeysCount" @click="downloadFiles" title="Download files">
-                <i class="fa fa-cloud-download-alt" style="margin-right: 0.5rem" />Download
-              </button>
-              <button type="button" style="cursor: pointer; margin-left: 0.5rem" class="text-primary btn btn-xs btn-primary" @click="store.showAddFolder = true" title="New folder">
-                <i class="fa fa-folder-plus" style="margin-right: 0.5rem" />New Folder
-              </button>
-              <button type="button" style="cursor: pointer; margin-left: 0.5rem" class="text-primary btn btn-xs btn-danger"
-                :disabled="!selectedKeysCount" @click="store.showTrash = true" title="Delete Objects">
-                <i class="fa fa-trash-alt" style="margin-right: 0.5rem" />Delete Objects
-              </button>
-            </div>
-          </div>
-
-          <br>
-
-          <table v-if="store.tokens" class="table table-bordered table-hover table-striped" style="width:100%;" id="s3objects-table">
-            <thead>
-              <tr>
-                <th class="text-center" style="text-align: center; cursor: pointer" @click="state.globalSelect = !state.globalSelect">
-                  <input type="checkbox" v-model="state.globalSelect">
-                </th>
-                <th>Object</th>
-                <th>Last Modified</th>
-                <th>Class</th>
-                <th>Size</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="path in sortedObjects.filter(o => o.type === 'DIRECTORY')" :key="path.key">
-                <td style="text-align: center; cursor: pointer" @click="() => state.selectedKeys[path.key] = !state.selectedKeys[path.key]">
-                  <input type="checkbox" v-model="state.selectedKeys[path.key]">
-                </td>
-                <td><i class="fas fa-folder" style="margin-right: 1rem" /><a :href="`#path=${path.key}`" @click="exploreDirectory(path.key)">
-                  {{ path.key.split(store.delimiter).slice(-1)[0] || store.delimiter }}</a>
-                </td>
-                <td style="text-align: center" />
-                <td style="text-align: center" />
-                <td style="text-align: center" />
-              </tr>
-              <tr v-for="path in sortedObjects.filter(o => o.type === 'PATH' && o.key.split(store.delimiter).slice(-1)[0])" :key="path.key">
-                <td style="text-align: center; cursor: pointer" @click="() => state.selectedKeys[path.key] = !state.selectedKeys[path.key]">
-                  <input type="checkbox" v-model="state.selectedKeys[path.key]">
-                </td>
-                <td>{{ path.key.split(store.delimiter).slice(-1)[0] }}</td>
-                <td style="text-align: center">{{ path.lastModified }}</td>
-                <td style="text-align: center">{{ path.storageClass }}</td>
-                <td style="text-align: center">{{ formatByteSize(path.size) }}</td>
-              </tr>
-            </tbody>
-          </table>
+        <div v-if="store.globalLoader">
+          <loader />
         </div>
 
+        <template v-else>
+          <!-- Panel including S3 object table -->
+          <div class="panel-body" style="overflow: auto">
+
+            <div v-if="store.tokens && store.currentBucket" style="display: flex; align-items: center; justify-content: space-between">
+              <div>
+                <span><a href="#" @click="exploreDirectory(null)">{{ store.currentBucket }}</a></span>&nbsp;/&nbsp;
+                <span v-for="(part, partIndex) in pathParts" :key="part">
+                  <a :style="{ 'text-decoration': partIndex + 1 === pathParts.length ? 'none' : undefined, color: partIndex + 1 === pathParts.length ? 'unset' : undefined, cursor: partIndex + 1 === pathParts.length ? 'unset' : 'pointer' }"
+                    :href="`#path=${pathParts.slice(0, partIndex + 1).join(store.delimiter)}`" @click="exploreDirectory(pathParts.slice(0, partIndex + 1).join(store.delimiter))">
+                    {{ part.length > 30 ? `${part.slice(0, 30)}…` : part }}
+                  </a>&nbsp;/&nbsp;
+                </span>
+              </div>
+              <div style="flex-shrink: 0; flex-grow: 1; display: flex; flex-direction: row; flex-wrap: no-wrap; justify-content: flex-end">
+                <button type="button" style="cursor: pointer; margin-left: 0.5rem" class="text-primary btn btn-xs btn-warning"
+                  :disabled="!selectedKeysCount" @click="downloadFiles" title="Download files">
+                  <i class="fa fa-cloud-download-alt" style="margin-right: 0.5rem" />Download
+                </button>
+                <button type="button" style="cursor: pointer; margin-left: 0.5rem" class="text-primary btn btn-xs btn-primary" @click="store.showAddFolder = true" title="New folder">
+                  <i class="fa fa-folder-plus" style="margin-right: 0.5rem" />New Folder
+                </button>
+                <button type="button" style="cursor: pointer; margin-left: 0.5rem" class="text-primary btn btn-xs btn-danger"
+                  :disabled="!selectedKeysCount" @click="store.showTrash = true" title="Delete Objects">
+                  <i class="fa fa-trash-alt" style="margin-right: 0.5rem" />Delete Objects
+                </button>
+              </div>
+            </div>
+
+            <br>
+
+            <table v-if="store.tokens" class="table table-bordered table-hover table-striped" style="width:100%;" id="s3objects-table">
+              <thead>
+                <tr>
+                  <th class="text-center" style="text-align: center; cursor: pointer" @click="state.globalSelect = !state.globalSelect">
+                    <input type="checkbox" v-model="state.globalSelect">
+                  </th>
+                  <th>Object</th>
+                  <th>Last Modified</th>
+                  <th>Class</th>
+                  <th>Size</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="path in sortedObjects.filter(o => o.type === 'DIRECTORY')" :key="path.key">
+                  <td style="text-align: center; cursor: pointer" @click="() => state.selectedKeys[path.key] = !state.selectedKeys[path.key]">
+                    <input type="checkbox" v-model="state.selectedKeys[path.key]">
+                  </td>
+                  <td><i class="fas fa-folder" style="margin-right: 1rem" /><a :href="`#path=${path.key}`" @click="exploreDirectory(path.key)">
+                    {{ path.key.split(store.delimiter).slice(-1)[0] || store.delimiter }}</a>
+                  </td>
+                  <td style="text-align: center" />
+                  <td style="text-align: center" />
+                  <td style="text-align: center" />
+                </tr>
+                <tr v-for="path in sortedObjects.filter(o => o.type === 'PATH' && o.key.split(store.delimiter).slice(-1)[0])" :key="path.key">
+                  <td style="text-align: center; cursor: pointer" @click="() => state.selectedKeys[path.key] = !state.selectedKeys[path.key]">
+                    <input type="checkbox" v-model="state.selectedKeys[path.key]">
+                  </td>
+                  <td>{{ path.key.split(store.delimiter).slice(-1)[0] }}</td>
+                  <td style="text-align: center">{{ path.lastModified }}</td>
+                  <td style="text-align: center">{{ path.storageClass }}</td>
+                  <td style="text-align: center">{{ formatByteSize(path.size) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </template>
       </div>
     </div>
 
@@ -133,7 +138,7 @@
       </div>
     </div>
 
-    <div class="col-12">
+    <div v-if="!store.globalLoader" class="col-12">
       <SettingsModal v-if="store.showSettings" />
       <BucketSelectorModal v-if="store.showBucketSelector" />
       <AddFolderModal v-if="store.showAddFolder" />
@@ -157,6 +162,7 @@ import TrashModal from './trashModal.vue';
 import UploadModal from './uploadModal.vue';
 import PoweredBy from './poweredBy.vue';
 import DropzoneWrapper from './dropzoneWrapper.vue';
+import Loader from './loader.vue';
 
 import { login } from '../awsUtilities';
 import { formatByteSize } from '../converters';
@@ -199,31 +205,31 @@ const selectBucket = () => {
 onMounted(async () => {
   if (store.loggedOut) {
     store.showSettings = true;
+    store.globalLoader = false;
     return;
   }
 
   if (!store.initialized) {
     await login();
+    store.globalLoader = false;
 
-    try {
-      if (!store.currentBucket && !store.tokens) {
-        throw Error('ForceSettingsOnNoBucketSelected');
-      }
-      await fetchBucketObjects();
-    } catch (error) {
-      DEBUG.log('Fetching Bucket Objects Error: ', error);
-      store.showBucketSelector = false;
+    if (!store.tokens) {
       store.showSettings = true;
-      store.loggedOut = true;
       store.objects = [];
-      store.currentBucket = null;
       return;
     }
 
-    if (!store.rememberedBuckets.length && !store.showSettings || !store.currentBucket) {
+    if (!store.currentBucket) {
+      if (store.rememberedBuckets.length) {
+        store.currentBucket = store.rememberedBuckets[0];
+        return;
+      }
       store.showBucketSelector = true;
+      store.objects = [];
+      return;
     }
   }
+  store.globalLoader = false;
 });
 
 const fileAdded = file => {
