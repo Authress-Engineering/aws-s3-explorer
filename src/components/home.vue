@@ -221,7 +221,7 @@ onMounted(async () => {
 
     if (!store.currentBucket) {
       if (store.rememberedBuckets.length) {
-        store.currentBucket = store.rememberedBuckets[0];
+        store.currentBucket = store.rememberedBuckets[0].bucket?.trim().toLowerCase();
         return;
       }
       store.showBucketSelector = true;
