@@ -76,7 +76,7 @@ commander
       console.log('Publish Result', result);
 
       const serverlessApplicationRepository = new aws.ServerlessApplicationRepository();
-      const template = require('./template/cloudformationTemplate.json');
+      const template = require('./template/cloudformationTemplate.js');
       const params = {
         ApplicationId: `arn:aws:serverlessrepo:${aws.config.region}:${process.env.AWS_ACCOUNT_ID}:applications/S3-Explorer`,
         SemanticVersion: version,

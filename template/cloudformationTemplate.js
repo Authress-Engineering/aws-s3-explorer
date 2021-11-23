@@ -1,4 +1,4 @@
-{
+module.exports = {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Transform": "AWS::Serverless-2016-10-31",
   "Description": "S3 Explorer automation template",
