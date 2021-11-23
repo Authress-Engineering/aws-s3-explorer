@@ -19,9 +19,9 @@ module.exports = {
 
   Conditions: {
     IsGlobalRegion: { 'Fn::Equals': [{ Ref: 'AWS::Region' }, 'us-east-1'] },
-    DeployCustomDomain: { 'Fn::Not': [{ 'Fn::Equals': [{ Ref: 'CustomDomain' }, ''] }] },
-    CustomDomainConfigured: { 'Fn::And': [{ Condition: 'IsGlobalRegion' }, { Condition: 'DeployCustomDomain' }] },
-    DisplayError: { 'Fn::And': [{ 'Fn::Not': [{ Condition: 'IsGlobalRegion' }] }, { Condition: 'DeployCustomDomain' }] }
+    CustomDomainConfigured: { 'Fn::Not': [{ 'Fn::Equals': [{ Ref: 'CustomDomain' }, ''] }] },
+    DeployCustomDomain: { 'Fn::And': [{ Condition: 'IsGlobalRegion' }, { Condition: 'CustomDomainConfigured' }] },
+    DisplayError: { 'Fn::And': [{ 'Fn::Not': [{ Condition: 'IsGlobalRegion' }] }, { Condition: 'CustomDomainConfigured' }] }
   },
 
   // Rules don't prevent configuration, so it is a bad UX for implementors, include we'll enable deployment and explain the error below
@@ -86,7 +86,7 @@ module.exports = {
           'https://console.rhosys.ch/'
         ],
         ClientName: 'S3 Explorer UI',
-        DefaultRedirectURI: { 'Fn::Sub': 'https://${CustomDomain}/' },
+        DefaultRedirectURI: { 'Fn::If': ['CustomDomainConfigured', { 'Fn::Sub': 'https://${CustomDomain}/' }, 'https://console.rhosys.ch/'] },
         EnableTokenRevocation: true,
         ExplicitAuthFlows: ['ALLOW_REFRESH_TOKEN_AUTH'],
         GenerateSecret: false,
