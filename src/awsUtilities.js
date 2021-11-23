@@ -98,7 +98,9 @@ export async function login(forceLogin) {
   const redirectUri = `${window.location.origin}${window.location.pathname}`;
   store.loggedOut = false;
   window.location = `${store.applicationLoginUrl}/oauth2/authorize?response_type=code&client_id=${store.applicationClientId}&state=${nonce}&code_challenge_method=S256&code_challenge=${codeChallenge}&redirect_uri=${redirectUri}`;
+  const waiter = new Promise(resolve => setTimeout(resolve, 2000));
   await convertCredentialsToAWSCredentials();
+  await waiter;
 }
 
 const awsAccountId = computed(() => store.awsAccountId);
@@ -141,14 +143,6 @@ export async function setConfiguration(newAwsAccountId) {
 
   let configuration;
   if (newAwsAccountId) {
-    if (window.location.hostname !== 'localhost' && window.location.hostname !== 'console.rhosys.ch') {
-      try {
-        const data = await fetch(new URL('/configuration.json', window.location.href).toString());
-        configuration = await data.json();
-      } catch (error) {
-        // skip to next handler
-      }
-    }
     if (!configuration) {
       const weightedRegions = ['eu-west-1', 'us-east-1'];
       const configurationList = await Promise.all(weightedRegions.map(async region => {
