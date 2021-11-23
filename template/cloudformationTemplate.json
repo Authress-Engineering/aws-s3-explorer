@@ -6,7 +6,7 @@
     "CustomDomain": {
       "Type": "String",
       "Description": "A custom domain to host the Explorer on, specifying this value will deploy a TLS cert, a CloudFront distribution, and Route53 records. The default location is https://console.rhosys.ch. Do not include https:// in this string value. Pattern: console.example.com",
-      "Default": "console.rhosys.ch"
+      "Default": ""
     },
     "HostedZoneId": {
       "Type": "String",
@@ -18,7 +18,7 @@
   },
 
   "Conditions": {
-    "DeployCustomDomain": { "Fn::Not": [{ "Fn::Equals": [{ "Ref": "CustomDomain" }, "console.rhosys.ch" ] }] }
+    "DeployCustomDomain": { "Fn::Not": [{ "Fn::Equals": [{ "Ref": "CustomDomain" }, "" ] }] }
   },
 
   "Resources": {
@@ -64,8 +64,8 @@
         "AllowedOAuthFlowsUserPoolClient": true,
         "AllowedOAuthScopes": ["phone", "email", "openid", "profile", "aws.cognito.signin.user.admin"],
         "CallbackURLs": [
-          { "Fn::Sub": "https://${CustomDomain}" },
-          { "Fn::Sub": "https://${CustomDomain}/" },
+          { "Fn::If": ["DeployCustomDomain", { "Fn::Sub": "https://${CustomDomain}" }, "https://console.rhosys.ch"] },
+          { "Fn::If": ["DeployCustomDomain", { "Fn::Sub": "https://${CustomDomain}/" }, "https://console.rhosys.ch/"] },
           "http://localhost:8080",
           "http://localhost:8080/",
           "https://console.rhosys.ch",
@@ -78,8 +78,8 @@
         "GenerateSecret": false,
         "IdTokenValidity": 24,
         "LogoutURLs": [
-          { "Fn::Sub": "https://${CustomDomain}" },
-          { "Fn::Sub": "https://${CustomDomain}/" },
+          { "Fn::If": ["DeployCustomDomain", { "Fn::Sub": "https://${CustomDomain}" }, "https://console.rhosys.ch"] },
+          { "Fn::If": ["DeployCustomDomain", { "Fn::Sub": "https://${CustomDomain}/" }, "https://console.rhosys.ch/"] },
           "http://localhost:8080",
           "http://localhost:8080/",
           "https://console.rhosys.ch",
@@ -179,7 +179,7 @@
             {
               "AllowedHeaders": ["*"],
               "AllowedMethods": ["PUT", "POST", "DELETE", "HEAD", "GET"],
-              "AllowedOrigins": [{ "Fn::Sub": "https://${CustomDomain}" }, "https://console.rhosys.ch", "http://localhost:8080"],
+              "AllowedOrigins": [{ "Fn::If": ["DeployCustomDomain", { "Fn::Sub": "https://${CustomDomain}" }, "https://console.rhosys.ch"] }, "https://console.rhosys.ch", "http://localhost:8080"],
               "ExposedHeaders": ["x-amz-request-id"],
               "MaxAge": 3600
             }
