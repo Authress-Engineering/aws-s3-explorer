@@ -18,18 +18,22 @@ module.exports = {
   },
 
   Conditions: {
-    DeployCustomDomain: { 'Fn::Not': [{ 'Fn::Equals': [{ Ref: 'CustomDomain' }, ''] }] }
+    IsGlobalRegion: { 'Fn::Equals': [{ Ref: 'AWS::Region' }, 'us-east-1'] },
+    DeployCustomDomain: { 'Fn::Not': [{ 'Fn::Equals': [{ Ref: 'CustomDomain' }, ''] }] },
+    CustomDomainConfigured: { 'Fn::And': [{ Condition: 'IsGlobalRegion' }, { Condition: 'DeployCustomDomain' }] },
+    DisplayError: { 'Fn::And': [{ 'Fn::Not': [{ Condition: 'IsGlobalRegion' }] }, { Condition: 'DeployCustomDomain' }] }
   },
 
-  Rules: {
-    CustomDomainAwsRegion: {
-      RuleCondition: { 'Fn::Not': [{ 'Fn::Equals': [{ Ref: 'CustomDomain' }, ''] }] },
-      Assertions: [{
-        AssertDescription: 'When using a custom domain, CloudFront requires the region is set US-EAST-1 for certification creation to work.',
-        Assert: { 'Fn::Equals': [{ Ref: 'AWS::Region' }, 'us-east-1'] }
-      }]
-    }
-  },
+  // Rules don't prevent configuration, so it is a bad UX for implementors, include we'll enable deployment and explain the error below
+  // Rules: {
+  //   CustomDomainAwsRegion: {
+  //     RuleCondition: { 'Fn::Not': [{ 'Fn::Equals': [{ Ref: 'CustomDomain' }, ''] }] },
+  //     Assertions: [{
+  //       AssertDescription: 'When using a custom domain, CloudFront requires the region is set US-EAST-1 for certification creation to work.',
+  //       Assert: { 'Fn::Equals': [{ Ref: 'AWS::Region' }, 'us-east-1'] }
+  //     }]
+  //   }
+  // },
 
   Resources: {
     CognitoUserPool: {
@@ -74,8 +78,8 @@ module.exports = {
         AllowedOAuthFlowsUserPoolClient: true,
         AllowedOAuthScopes: ['phone', 'email', 'openid', 'profile', 'aws.cognito.signin.user.admin'],
         CallbackURLs: [
-          { 'Fn::If': ['DeployCustomDomain', { 'Fn::Sub': 'https://${CustomDomain}' }, 'https://console.rhosys.ch'] },
-          { 'Fn::If': ['DeployCustomDomain', { 'Fn::Sub': 'https://${CustomDomain}/' }, 'https://console.rhosys.ch/'] },
+          { 'Fn::If': ['CustomDomainConfigured', { 'Fn::Sub': 'https://${CustomDomain}' }, 'https://console.rhosys.ch'] },
+          { 'Fn::If': ['CustomDomainConfigured', { 'Fn::Sub': 'https://${CustomDomain}/' }, 'https://console.rhosys.ch/'] },
           'http://localhost:8080',
           'http://localhost:8080/',
           'https://console.rhosys.ch',
@@ -88,8 +92,8 @@ module.exports = {
         GenerateSecret: false,
         IdTokenValidity: 24,
         LogoutURLs: [
-          { 'Fn::If': ['DeployCustomDomain', { 'Fn::Sub': 'https://${CustomDomain}' }, 'https://console.rhosys.ch'] },
-          { 'Fn::If': ['DeployCustomDomain', { 'Fn::Sub': 'https://${CustomDomain}/' }, 'https://console.rhosys.ch/'] },
+          { 'Fn::If': ['CustomDomainConfigured', { 'Fn::Sub': 'https://${CustomDomain}' }, 'https://console.rhosys.ch'] },
+          { 'Fn::If': ['CustomDomainConfigured', { 'Fn::Sub': 'https://${CustomDomain}/' }, 'https://console.rhosys.ch/'] },
           'http://localhost:8080',
           'http://localhost:8080/',
           'https://console.rhosys.ch',
@@ -189,7 +193,7 @@ module.exports = {
             {
               AllowedHeaders: ['*'],
               AllowedMethods: ['PUT', 'POST', 'DELETE', 'HEAD', 'GET'],
-              AllowedOrigins: [{ 'Fn::If': ['DeployCustomDomain', { 'Fn::Sub': 'https://${CustomDomain}' }, 'https://console.rhosys.ch'] }, 'https://console.rhosys.ch', 'http://localhost:8080'],
+              AllowedOrigins: [{ 'Fn::If': ['CustomDomainConfigured', { 'Fn::Sub': 'https://${CustomDomain}' }, 'https://console.rhosys.ch'] }, 'https://console.rhosys.ch', 'http://localhost:8080'],
               ExposedHeaders: ['x-amz-request-id'],
               MaxAge: 3600
             }
@@ -459,6 +463,10 @@ module.exports = {
     ConsoleUrl: {
       Description: "S3 Explorer deployed location, set using the 'CustomDomain' parameter. Defaults to: https://console.rhosys.ch",
       Value: { 'Fn::If': ['DeployCustomDomain', { 'Fn::Sub': 'https://${CustomDomain}' }, 'https://console.rhosys.ch'] }
+    },
+    DeploymentStatus: {
+      Description: 'Completion Status',
+      Value: { 'Fn::If': ['DisplayError', 'Error: Custom Domains only works when deployed from US-EAST-1, redeploy the app in us-east-1.', 'Success'] }
     }
   }
 };
