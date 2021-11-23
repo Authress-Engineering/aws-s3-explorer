@@ -11,6 +11,14 @@ const currentBucket = computed({
 });
 watch(currentBucket, async () => {
   try {
+    await fetchBucketObjects();
+  } catch (error) {
+    store.objects = [];
+  }
+});
+
+export async function fetchBucketObjects() {
+  try {
     store.objects = await fetchBucketObjectsExplicit(store.currentDirectory);
     // Sometimes the API just refuses to return real results the first time
     if (!store.objects.length) {
@@ -18,12 +26,14 @@ watch(currentBucket, async () => {
       store.objects = await fetchBucketObjectsExplicit(store.currentDirectory);
     }
   } catch (error) {
-    store.objects = [];
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      store.objects = await fetchBucketObjectsExplicit(store.currentDirectory);
+      return;
+    } catch (innerError) {
+      throw error;
+    }
   }
-});
-
-export async function fetchBucketObjects() {
-  store.objects = await fetchBucketObjectsExplicit(store.currentDirectory);
 }
 
 export async function fetchBucketObjectsExplicit(directory, findAllMatching = false) {
