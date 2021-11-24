@@ -7,7 +7,7 @@ module.exports = {
       Parameters: {
         CustomDomain: {
           Type: 'String',
-          Description: '[Optional] A custom domain to host the Explorer on, specifying this value will deploy a TLS cert, a CloudFront distribution, and Route53 records. Do not include https:// in this string value. Pattern: console.example.com. The default deployed location is https://console.rhosys.ch.',
+          Description: '[Optional] Deploys a white-labeled proxy to a custom domain. Do not include the prefix "https://". The default deployed location is https://console.rhosys.ch. [PATTERN: console.example.com]',
           Default: ''
         }
       },
