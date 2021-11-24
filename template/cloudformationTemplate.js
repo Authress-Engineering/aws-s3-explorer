@@ -357,7 +357,7 @@ module.exports = {
                   }
                 },
                 {
-                  DomainName: { 'Fn::Sub': '${BucketForS3ExplorerSavedConfiguration.DomainName}' },
+                  DomainName: { 'Fn::Sub': '${BucketForS3ExplorerSavedConfiguration.RegionalDomainName}' },
                   Id: 'Configuration',
                   S3OriginConfig: {
                     OriginAccessIdentity: { 'Fn::Sub': 'origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentity}' }
