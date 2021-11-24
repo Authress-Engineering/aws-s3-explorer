@@ -99,10 +99,7 @@ const suggestedRegion = 'eu-west-1';
 
 const generatedCognitoPoolUrl = computed(() => `https://${store.region}.console.aws.amazon.com/cognito/users?region=${store.region}#/pool/${store.cognitoPoolId}`);
 const launchStackUrl = computed(() => {
-  if (store.awsAccountId) {
-    return `https://${suggestedRegion}.console.aws.amazon.com/lambda/home?region=${suggestedRegion}#/create/app?applicationId=arn:aws:serverlessrepo:eu-west-1:922723803004:applications/S3-Explorer`;
-  }
-  return null;
+  return `https://${suggestedRegion}.console.aws.amazon.com/lambda/home?region=${suggestedRegion}#/create/app?applicationId=arn:aws:serverlessrepo:eu-west-1:922723803004:applications/S3-Explorer`;
 });
 
 const cognitoLogin = async () => {
