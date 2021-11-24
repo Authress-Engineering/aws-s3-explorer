@@ -95,8 +95,7 @@ import { login, setConfiguration } from '../awsUtilities';
 
 const state = reactive({ region: null, copyButtonSuccess: false });
 
-// This has to be us-east-1 because the CF template only works in us-east-1 because ACM certs for CF only work in us-east-1
-const suggestedRegion = 'us-east-1';
+const suggestedRegion = 'eu-west-1';
 
 const generatedCognitoPoolUrl = computed(() => `https://${store.region}.console.aws.amazon.com/cognito/users?region=${store.region}#/pool/${store.cognitoPoolId}`);
 const launchStackUrl = computed(() => {

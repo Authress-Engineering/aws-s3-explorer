@@ -94,6 +94,20 @@ commander
     }
   });
 
+commander.command('test-setup')
+.description('Test the deployment')
+.action(async () => {
+  try {
+    const templateProvider = require('./template/cloudformationTemplate');
+    const lambdaFunction = await fs.readFile(path.join(__dirname, 'template/lambdaFunction.js'));
+    const template = templateProvider.getTemplate(lambdaFunction.toString());
+    await fs.writeFile(path.join(__dirname, 'template/cloudformationTemplate.json'), typeof template === 'object' ? JSON.stringify(template) : template);
+  } catch (error) {
+    console.log('Failed to push new application version', error);
+    process.exit(1);
+  }
+});
+
 commander.on('*', () => {
   if (commander.args.join(' ') === 'tests/**/*.js') { return; }
   console.log(`Unknown Command: ${commander.args.join(' ')}`);

@@ -7,35 +7,14 @@ module.exports = {
       Parameters: {
         CustomDomain: {
           Type: 'String',
-          Description: '[Optional] A custom domain to host the Explorer on, specifying this value will deploy a TLS cert, a CloudFront distribution, and Route53 records. The App MUST Be deployed in us-east-1 due to limitations in CloudFront. Do not include https:// in this string value. Pattern: console.example.com. The default deployed location is https://console.rhosys.ch.',
-          Default: ''
-        },
-        HostedZoneId: {
-          Type: 'String',
-          Description: '[Optional] A Route53 hosted zone ID to use for a custom domain. The hosted zone is required to use the CustomDomain parameter below. The Hosted Zone must match the custom domain top level origin. If the custom domain is console.example.com, then this hosted zone should have been configured for example.com, Pattern: Z0000000000',
-          AllowedPattern: '^(Z[A-Za-z0-9]{8,20})?$',
-          ConstraintDescription: "No Hosted Zone with that ID exists, hosted zone ids usually match 'Z[A-Za-z0-9]{13}",
+          Description: '[Optional] A custom domain to host the Explorer on, specifying this value will deploy a TLS cert, a CloudFront distribution, and Route53 records. Do not include https:// in this string value. Pattern: console.example.com. The default deployed location is https://console.rhosys.ch.',
           Default: ''
         }
       },
 
       Conditions: {
-        IsGlobalRegion: { 'Fn::Equals': [{ Ref: 'AWS::Region' }, 'us-east-1'] },
-        CustomDomainConfigured: { 'Fn::Not': [{ 'Fn::Equals': [{ Ref: 'CustomDomain' }, ''] }] },
-        DeployCustomDomain: { 'Fn::And': [{ Condition: 'IsGlobalRegion' }, { Condition: 'CustomDomainConfigured' }] },
-        DisplayError: { 'Fn::And': [{ 'Fn::Not': [{ Condition: 'IsGlobalRegion' }] }, { Condition: 'CustomDomainConfigured' }] }
+        DeployCustomDomain: { 'Fn::Not': [{ 'Fn::Equals': [{ Ref: 'CustomDomain' }, ''] }] }
       },
-
-      // Rules don't prevent configuration, so it is a bad UX for implementors, include we'll enable deployment and explain the error below
-      // Rules: {
-      //   CustomDomainAwsRegion: {
-      //     RuleCondition: { 'Fn::Not': [{ 'Fn::Equals': [{ Ref: 'CustomDomain' }, ''] }] },
-      //     Assertions: [{
-      //       AssertDescription: 'When using a custom domain, CloudFront requires the region is set US-EAST-1 for certification creation to work.',
-      //       Assert: { 'Fn::Equals': [{ Ref: 'AWS::Region' }, 'us-east-1'] }
-      //     }]
-      //   }
-      // },
 
       Resources: {
         CognitoUserPool: {
@@ -80,22 +59,22 @@ module.exports = {
             AllowedOAuthFlowsUserPoolClient: true,
             AllowedOAuthScopes: ['phone', 'email', 'openid', 'profile', 'aws.cognito.signin.user.admin'],
             CallbackURLs: [
-              { 'Fn::If': ['CustomDomainConfigured', { 'Fn::Sub': 'https://${CustomDomain}' }, 'https://console.rhosys.ch'] },
-              { 'Fn::If': ['CustomDomainConfigured', { 'Fn::Sub': 'https://${CustomDomain}/' }, 'https://console.rhosys.ch/'] },
+              { 'Fn::If': ['DeployCustomDomain', { 'Fn::Sub': 'https://${CustomDomain}' }, 'https://console.rhosys.ch'] },
+              { 'Fn::If': ['DeployCustomDomain', { 'Fn::Sub': 'https://${CustomDomain}/' }, 'https://console.rhosys.ch/'] },
               'http://localhost:8080',
               'http://localhost:8080/',
               'https://console.rhosys.ch',
               'https://console.rhosys.ch/'
             ],
             ClientName: 'S3 Explorer UI',
-            DefaultRedirectURI: { 'Fn::If': ['CustomDomainConfigured', { 'Fn::Sub': 'https://${CustomDomain}/' }, 'https://console.rhosys.ch/'] },
+            DefaultRedirectURI: { 'Fn::If': ['DeployCustomDomain', { 'Fn::Sub': 'https://${CustomDomain}/' }, 'https://console.rhosys.ch/'] },
             EnableTokenRevocation: true,
             ExplicitAuthFlows: ['ALLOW_REFRESH_TOKEN_AUTH'],
             GenerateSecret: false,
             IdTokenValidity: 24,
             LogoutURLs: [
-              { 'Fn::If': ['CustomDomainConfigured', { 'Fn::Sub': 'https://${CustomDomain}' }, 'https://console.rhosys.ch'] },
-              { 'Fn::If': ['CustomDomainConfigured', { 'Fn::Sub': 'https://${CustomDomain}/' }, 'https://console.rhosys.ch/'] },
+              { 'Fn::If': ['DeployCustomDomain', { 'Fn::Sub': 'https://${CustomDomain}' }, 'https://console.rhosys.ch'] },
+              { 'Fn::If': ['DeployCustomDomain', { 'Fn::Sub': 'https://${CustomDomain}/' }, 'https://console.rhosys.ch/'] },
               'http://localhost:8080',
               'http://localhost:8080/',
               'https://console.rhosys.ch',
@@ -195,7 +174,7 @@ module.exports = {
                 {
                   AllowedHeaders: ['*'],
                   AllowedMethods: ['PUT', 'POST', 'DELETE', 'HEAD', 'GET'],
-                  AllowedOrigins: [{ 'Fn::If': ['CustomDomainConfigured', { 'Fn::Sub': 'https://${CustomDomain}' }, 'https://console.rhosys.ch'] }, 'https://console.rhosys.ch', 'http://localhost:8080'],
+                  AllowedOrigins: [{ 'Fn::If': ['DeployCustomDomain', { 'Fn::Sub': 'https://${CustomDomain}' }, 'https://console.rhosys.ch'] }, 'https://console.rhosys.ch', 'http://localhost:8080'],
                   ExposedHeaders: ['x-amz-request-id'],
                   MaxAge: 3600
                 }
@@ -243,6 +222,7 @@ module.exports = {
           DependsOn: 'AWSLambdaExecutionRole',
           Properties: {
             ServiceToken: { 'Fn::GetAtt': ['AWSLambdaFunction', 'Arn'] },
+            Type: 'BUCKET',
             BucketName: { Ref: 'BucketForS3ExplorerSavedConfiguration' },
             CognitoPoolId: { Ref: 'CognitoUserPool' },
             LoginUrl: { Ref: 'CognitoLoginUiConfiguration' },
@@ -259,7 +239,7 @@ module.exports = {
             FunctionName: { 'Fn::Sub': '${AWS::StackName}-${AWS::Region}-lambda' },
             Handler: 'index.handler',
             Role: { 'Fn::GetAtt': ['AWSLambdaExecutionRole', 'Arn'] },
-            Timeout: 10,
+            Timeout: 900,
             Runtime: 'nodejs12.x',
             Code: {
               ZipFile: lambdaFunctionString
@@ -301,14 +281,21 @@ module.exports = {
                 PolicyDocument: {
                   Statement: [
                     {
+                      Sid: 'S3Configuration',
                       Action: ['s3:PutObject', 's3:DeleteObject'],
                       Effect: 'Allow',
                       Resource: [{ 'Fn::Sub': '${BucketForS3ExplorerSavedConfiguration.Arn}/*' }]
+                    },
+                    {
+                      Sid: 'CertificateManagement',
+                      Action: ['acm:RequestCertificate', 'acm:DescribeCertificate', 'acm:ListCertificates', 'acm:AddTagsToCertificate', 'route53:ListHostedZonesByName'],
+                      Effect: 'Allow',
+                      Resource: '*'
                     }
                   ],
                   Version: '2012-10-17'
                 },
-                PolicyName: { 'Fn::Sub': '${AWS::StackName}-${AWS::Region}-AWSLambda-S3' }
+                PolicyName: { 'Fn::Sub': '${AWS::StackName}-${AWS::Region}-AWSLambda' }
               }
             ],
             RoleName: { 'Fn::Sub': '${AWS::StackName}-${AWS::Region}-AWSLambdaExecutionRole' }
@@ -316,21 +303,43 @@ module.exports = {
         },
 
         Certificate: {
-          Type: 'AWS::CertificateManager::Certificate',
+          Type: 'Custom::Certificate',
+          Condition: 'DeployCustomDomain',
+          DependsOn: 'AWSLambdaExecutionRole',
+          Properties: {
+            ServiceToken: { 'Fn::GetAtt': ['AWSLambdaFunction', 'Arn'] },
+            Type: 'CERTIFICATE',
+            CustomDomain: { Ref: 'CustomDomain' }
+          }
+        },
+
+        CertificateValidation: {
+          Type: 'AWS::Route53::RecordSet',
           Condition: 'DeployCustomDomain',
           Properties: {
-            DomainName: { 'Fn::Sub': '${CustomDomain}' },
-            ValidationMethod: 'DNS',
-            DomainValidationOptions: [{
-              DomainName: { 'Fn::Sub': '${CustomDomain}' },
-              HostedZoneId: { Ref: 'HostedZoneId' }
-            }]
+            HostedZoneId: { 'Fn::Sub': '${Certificate.HostedZoneId}' },
+            Name: { 'Fn::Sub': '${Certificate.Name}' },
+            Type: 'CNAME',
+            TTL: '60',
+            ResourceRecords: [{ 'Fn::Sub': '${Certificate.Value}' }]
+          }
+        },
+
+        CertificateVerifier: {
+          Type: 'Custom::CertificateVerifier',
+          DependsOn: 'CertificateValidation',
+          Condition: 'DeployCustomDomain',
+          Properties: {
+            ServiceToken: { 'Fn::GetAtt': ['AWSLambdaFunction', 'Arn'] },
+            Type: 'CERTIFICATE_VERIFIER',
+            CertificateArn: { 'Fn::Sub': '${Certificate.Arn}' }
           }
         },
 
         CloudFrontDistribution: {
           Type: 'AWS::CloudFront::Distribution',
           Condition: 'DeployCustomDomain',
+          DependsOn: 'CertificateVerifier',
           Properties: {
             DistributionConfig: {
               Comment: 'S3 Explorer UI',
@@ -357,7 +366,7 @@ module.exports = {
               ],
               Enabled: true,
               ViewerCertificate: {
-                AcmCertificateArn: { Ref: 'Certificate' },
+                AcmCertificateArn: { 'Fn::Sub': '${Certificate.Arn}' },
                 MinimumProtocolVersion: 'TLSv1.2_2021',
                 SslSupportMethod: 'sni-only'
               },
@@ -420,7 +429,7 @@ module.exports = {
               DNSName: { 'Fn::GetAtt': ['CloudFrontDistribution', 'DomainName'] },
               HostedZoneId: 'Z2FDTNDATAQYW2'
             },
-            HostedZoneId: { Ref: 'HostedZoneId' },
+            HostedZoneId: { 'Fn::Sub': '${Certificate.HostedZoneId}' },
             Name: { Ref: 'CustomDomain' },
             Type: 'A'
           }
@@ -431,10 +440,6 @@ module.exports = {
         ConsoleUrl: {
           Description: "S3 Explorer deployed location, set using the 'CustomDomain' parameter. Defaults to: https://console.rhosys.ch",
           Value: { 'Fn::If': ['DeployCustomDomain', { 'Fn::Sub': 'https://${CustomDomain}' }, 'https://console.rhosys.ch'] }
-        },
-        DeploymentStatus: {
-          Description: 'Completion Status',
-          Value: { 'Fn::If': ['DisplayError', 'Error: Custom Domains only works when deployed from US-EAST-1, redeploy the app in us-east-1.', 'Success'] }
         }
       }
     };
