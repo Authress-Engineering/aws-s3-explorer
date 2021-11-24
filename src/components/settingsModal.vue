@@ -66,11 +66,12 @@
                       <li>
                         Navigate to the newly created Cognito Pool and configure:
                         <ul>
-                          <li><a :href="`${generatedCognitoPoolUrl}/federation-identity-providers`" target="_blank">
-                            Federation > Identity providers</a><br>Select your SSO identity provider and fill in the credentials.
+                          <li><a :href="`${generatedCognitoPoolUrl}/sign-in/identity-providers/add`" target="_blank">
+                            Sign-in experience > Federated identity provider sign-in</a><br>Select your SSO identity provider and fill in the credentials.
                           </li>
-                          <li><a :href="`${generatedCognitoPoolUrl}//app-integration-app-settings`" target="_blank">
-                            App integration > App client settings > Enabled Identity Providers</a><br>Enable the new identity provider, that you just linked (then click <strong>Save</strong>)
+                          <li><a :href="`${generatedCognitoPoolUrl}/app-integration/clients/${store.applicationClientId}/edit/hosted-ui-settings`" target="_blank">
+                            App integration > Identity providers</a><br>Select the new identity provider, that you just linked
+                              (then click <strong>Save changes</strong>)
                           </li>
                         </ul>
                       </li>
@@ -97,7 +98,7 @@ const state = reactive({ region: null, copyButtonSuccess: false });
 
 const suggestedRegion = 'eu-west-1';
 
-const generatedCognitoPoolUrl = computed(() => `https://${store.region}.console.aws.amazon.com/cognito/users?region=${store.region}#/pool/${store.cognitoPoolId}`);
+const generatedCognitoPoolUrl = computed(() => `https://${store.region}.console.aws.amazon.com/cognito/v2/idp/user-pools/${store.cognitoPoolId}`);
 const launchStackUrl = computed(() => {
   return `https://${suggestedRegion}.console.aws.amazon.com/lambda/home?region=${suggestedRegion}#/create/app?applicationId=arn:aws:serverlessrepo:eu-west-1:922723803004:applications/S3-Explorer`;
 });
