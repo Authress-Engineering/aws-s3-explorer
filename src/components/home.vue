@@ -154,7 +154,7 @@
 import { reactive, onMounted, computed, watch } from 'vue';
 
 import DEBUG from '../logger';
-import store from '../store';
+import store, { getBuckets } from '../store';
 import SettingsModal from './settingsModal.vue';
 import BucketSelectorModal from './bucketSelectorModal.vue';
 import AddFolderModal from './addFolderModal.vue';
@@ -164,7 +164,7 @@ import PoweredBy from './poweredBy.vue';
 import DropzoneWrapper from './dropzoneWrapper.vue';
 import Loader from './loader.vue';
 
-import { login } from '../awsUtilities';
+import { fetchSharedSettings, login } from '../awsUtilities';
 import { formatByteSize } from '../converters';
 import { fetchBucketObjects, downloadObjects } from '../bucketManager';
 
@@ -186,6 +186,7 @@ const logout = () => {
   DEBUG.log('Logging out');
   store.objects = [];
   store.loggedOut = true;
+  store.autoLoginIn = false;
   store.showBucketSelector = false;
 
   if (store.tokens) {
@@ -211,6 +212,7 @@ onMounted(async () => {
 
   if (!store.initialized) {
     await login();
+    await fetchSharedSettings();
     store.globalLoader = false;
 
     if (!store.tokens) {
@@ -220,8 +222,8 @@ onMounted(async () => {
     }
 
     if (!store.currentBucket) {
-      if (store.rememberedBuckets.length) {
-        store.currentBucket = store.rememberedBuckets[0].bucket?.trim().toLowerCase();
+      if (getBuckets().length) {
+        store.currentBucket = getBuckets()[0].bucket?.trim().toLowerCase();
         return;
       }
       store.showBucketSelector = true;

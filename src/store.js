@@ -20,7 +20,8 @@ const store = reactive(Object.assign({
   objects: [],
 
   loggedOut: false,
-  autoLoginIn: false
+  autoLoginIn: false,
+  sharedSettings: {}
 }, storedData, {
   initialized: false,
   globalLoader: true,
@@ -45,7 +46,16 @@ watch(currentBucket, () => {
 
 export default store;
 
-export function getViewPrefix() { return store.view_prefix || store.prefix; }
+export function getBuckets() {
+  return store.rememberedBuckets.concat(store.sharedSettings?.buckets || [])
+  .map(bucket => {
+    if (typeof bucket === 'object') {
+      return bucket;
+    }
+
+    return { bucket };
+  }).sort((a, b) => a.bucket.localeCompare(b.bucket));
+}
 
 export const s3StorageClasses = {
   STANDARD: 'Standard',

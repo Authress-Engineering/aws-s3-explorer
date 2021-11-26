@@ -2,7 +2,7 @@ import { DateTime } from 'luxon';
 import { watch, computed } from 'vue';
 import { saveAs } from 'file-saver';
 
-import store from './store';
+import store, { getBuckets } from './store';
 
 const currentBucket = computed({
   get() {
@@ -88,7 +88,7 @@ export async function validateConfiguration(bucket) {
 }
 
 export async function downloadObjects(bucket, keys) {
-  const s3client = new AWS.S3({ maxRetries: 0, region: store.rememberedBuckets.find(b => b.bucket === bucket).region || store.region });
+  const s3client = new AWS.S3({ maxRetries: 0, region: getBuckets().find(b => b.bucket === bucket).region || store.region });
 
   const downloadObject = async key => {
     const params = { Bucket: bucket, Key: key, RequestPayer: 'requester' };

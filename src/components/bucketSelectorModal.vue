@@ -14,7 +14,7 @@
                 <h4>Select a bucket or specify a new one:</h4>
                 <multiselect
                   v-model.trim="store.currentBucket"
-                  :options="store.rememberedBuckets.map(b => b.bucket)"
+                  :options="getBuckets().map(b => b.bucket)"
                   placeholder="Select a bucket or enter a new one"
                   :showLabels="false" :allowEmpty="false" :taggable="true"
                   open-direction="bottom" :hideSelected="true"
@@ -92,7 +92,7 @@
 import { reactive, onMounted } from 'vue';
 import Multiselect from '@suadelabs/vue3-multiselect';
 import DEBUG from '../logger';
-import store from '../store';
+import store, { getBuckets } from '../store';
 import { validateConfiguration } from '../bucketManager';
 
 const state = reactive({
@@ -132,7 +132,9 @@ const bucketSelected = async (bucket, skipClose) => {
 
 const newBucketEntered = newBucketRaw => {
   const newBucket = newBucketRaw && newBucketRaw.trim().toLowerCase();
-  store.rememberedBuckets.push({ bucket: newBucket });
+  if (!getBuckets().some(b => b.bucket === newBucket)) {
+    store.rememberedBuckets.push({ bucket: newBucket });
+  }
   store.currentBucket = newBucket;
   bucketSelected(newBucket);
 };
@@ -142,7 +144,7 @@ onMounted(async () => {
     await bucketSelected(store.currentBucket, true);
   }
 
-  if (!store.rememberedBuckets.length) {
+  if (!getBuckets().length) {
     state.showError = 'FETCH_ALL_BUCKETS';
   }
 });

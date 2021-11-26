@@ -25,6 +25,7 @@ Rhosys hosts an explorer to use out of the box for the community. For obvious se
 
 ### Configuration: The only setup step
 Jump over to the [AWS S3 explorer configuration](https://console.rhosys.ch) to deploy the Cognito CFN template, and configure your SSO provider. That's it!
+* [Custom configuration](./docs/configuration.md)
 
 <!-- ## Display Options
 

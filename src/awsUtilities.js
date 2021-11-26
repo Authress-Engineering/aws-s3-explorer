@@ -108,6 +108,20 @@ watch(awsAccountId, newAwsAccountId => {
   setConfiguration(newAwsAccountId);
 });
 
+export async function fetchSharedSettings() {
+  if (window.location.hostname === 'localhost' || window.location.hostname === 'console.rhosys.ch') {
+    return;
+  }
+  try {
+    const data = await fetch(new URL('/configuration/shared.json', window.location.href).toString());
+    const configuration = await data.json();
+    store.sharedSettings = configuration;
+    DEBUG.log('Updating shared configuration from custom domain.');
+  } catch (error) {
+    DEBUG.log('Failed to fetch shared configuration for custom domain: ', error);
+  }
+}
+
 async function setConfigurationFromCustomDomain() {
   if (window.location.hostname !== 'localhost' && window.location.hostname !== 'console.rhosys.ch') {
     try {
