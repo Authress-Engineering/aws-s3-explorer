@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon';
 import { watch, computed } from 'vue';
 import { saveAs } from 'file-saver';
+import JsZip from 'jszip';
 
 import store, { getBuckets } from './store';
 
@@ -90,13 +91,17 @@ export async function validateConfiguration(bucket) {
 export async function downloadObjects(bucket, keys) {
   const s3client = new AWS.S3({ maxRetries: 0, region: getBuckets().find(b => b.bucket === bucket).region || store.region });
 
+  const blobs = [];
   const downloadObject = async key => {
+    if (key.slice(-1)[0] === store.delimiter) {
+      return;
+    }
     const params = { Bucket: bucket, Key: key, RequestPayer: 'requester' };
     const result = await s3client.getObject(params).promise();
     const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
     const match = filenameRegex.exec(result.ContentDisposition);
     const filename = match && match[1].replace(/['"]/g, '') || key.split(store.delimiter).slice(-1)[0];
-    saveAs(new Blob([result.Body]), filename);
+    blobs.push({ blob: new Blob([result.Body]), filename, filepath: key, lastModified: result.LastModified });
   };
 
   await Promise.all(keys.map(async key => {
@@ -108,12 +113,17 @@ export async function downloadObjects(bucket, keys) {
     const bucketObjects = await fetchBucketObjectsExplicit(key, true);
     const additionalObjectKeys = bucketObjects.map(b => b.key);
     await Promise.all(additionalObjectKeys.map(additionalKey => downloadObject(additionalKey)));
-
-    // try {
-    //   const url = s3client.getSignedUrl('getObject', { Bucket: bucket, Key: key, Expires: 3600 });
-    //   window.open(url, '_blank');
-    // } catch (error) {
-    //   DEBUG.log(`Error creating getObject file url: ${key}`, error);
-    // }
   }));
+
+  if (blobs.length === 1) {
+    saveAs(blobs[0].blob, blobs[0].filename);
+    return;
+  }
+
+  const archiveAsync = new JsZip();
+  blobs.forEach(blob => {
+    archiveAsync.file(blob.filepath, blob.blob, { date: blob.lastModified, createFolders: true });
+  });
+  const archive = await archiveAsync.generateAsync({ type: 'blob' });
+  saveAs(archive, `${bucket}-${DateTime.local().toISODate()}.zip`);
 }
