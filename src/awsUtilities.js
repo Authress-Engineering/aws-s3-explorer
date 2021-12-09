@@ -132,7 +132,8 @@ async function setConfigurationFromCustomDomain() {
       store.identityPoolId = configuration.identityPoolId;
       store.cognitoPoolId = configuration.cognitoPoolId;
       store.region = store.identityPoolId.split(':')[0];
-      store.applicationLoginUrl = `https://${configuration.applicationLoginUrl}.auth.${store.region}.amazoncognito.com`;
+      store.applicationLoginUrl = configuration.applicationLoginUrl?.match(/^https:/)
+        ? configuration.applicationLoginUrl : `https://${configuration.applicationLoginUrl}.auth.${store.region}.amazoncognito.com`;
       store.autoLoginIn = true;
       return true;
     } catch (error) {
@@ -201,7 +202,8 @@ export async function setConfiguration(newAwsAccountId) {
     store.identityPoolId = configuration.identityPoolId;
     store.cognitoPoolId = configuration.cognitoPoolId;
     store.region = store.identityPoolId.split(':')[0];
-    store.applicationLoginUrl = `https://${configuration.applicationLoginUrl}.auth.${store.region}.amazoncognito.com`;
+    store.applicationLoginUrl = configuration.applicationLoginUrl?.match(/^https:/)
+      ? configuration.applicationLoginUrl : `https://${configuration.applicationLoginUrl}.auth.${store.region}.amazoncognito.com`;
   }
 }
 
