@@ -225,7 +225,12 @@ function convertCredentialsToAWSCredentials() {
     });
 
     DEBUG.log('Checking credentials');
-    AWS.config.credentials.get(async () => {
+    AWS.config.credentials.get(async credentialsError => {
+      if (credentialsError) {
+        DEBUG.log('Failed to get credentials, following requests will not work due to the error:', credentialsError);
+        return;
+      }
+
       try {
         const stsResult = await new AWS.STS({ region: store.region }).getCallerIdentity().promise();
         DEBUG.log('AWS Credentials Set', stsResult);
