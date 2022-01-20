@@ -16,7 +16,9 @@
         "redoc",
         "sublicensees",
         "tbody",
-        "thead"
+        "thead",
+        "vite",
+        "vitejs"
     ],
     "files.exclude": {
         "**/lib": true,

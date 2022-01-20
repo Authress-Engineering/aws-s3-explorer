@@ -18,9 +18,9 @@
 
 <script setup>
 import Dropzone from 'dropzone';
-import "dropzone/dist/dropzone.css";
+import 'dropzone/dist/dropzone.css';
 import 'dragster';
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue';
 
 const emit = defineEmits(['enter', 'leave', 'fileAdded']);
 
@@ -44,10 +44,11 @@ onMounted(() => {
   Dropzone.autoDiscover = false;
   const configuredDropzone = new Dropzone('#dropzone', {
     autoQueue: false,
-    url: "IGNORED",
+    url: 'IGNORED',
     previewsContainer: '#hiddenDropZoneList'
   });
-  configuredDropzone.on("addedfile", file => {
+  configuredDropzone.on('addedfile', file => {
+    // eslint-disable-next-line no-console
     console.log('File added', file.name, file.fullPath, file.size);
     emit('fileAdded', file);
     state.overlayActive = false;

@@ -60,3 +60,6 @@ Delete objects from a bucket succeeded:
 This project uses Vue 3, and as this is much different from Vue 2, recommend reading is available:
 * [General Updates](https://v3.vuejs.org/guide/computed.html)
 * [Script Setup tags](https://v3.vuejs.org/api/sfc-script-setup.html)
+
+### Troubleshooting builds
+**Error: OpenIDConnect provider's HTTPS certificate doesn't match configured thumbprint** - Update AWS IAM to use the thumbprint details of the issue [are available here](https://github.com/aws-actions/configure-aws-credentials/issues/357).
