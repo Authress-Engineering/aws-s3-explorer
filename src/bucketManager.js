@@ -1,8 +1,9 @@
 import { DateTime } from 'luxon';
 import { watch, computed } from 'vue';
 import { saveAs } from 'file-saver';
+import JsZip from 'jszip';
 
-import store from './store';
+import store, { getBuckets } from './store';
 
 const currentBucket = computed({
   get() {
@@ -11,6 +12,14 @@ const currentBucket = computed({
 });
 watch(currentBucket, async () => {
   try {
+    await fetchBucketObjects();
+  } catch (error) {
+    store.objects = [];
+  }
+});
+
+export async function fetchBucketObjects() {
+  try {
     store.objects = await fetchBucketObjectsExplicit(store.currentDirectory);
     // Sometimes the API just refuses to return real results the first time
     if (!store.objects.length) {
@@ -18,12 +27,14 @@ watch(currentBucket, async () => {
       store.objects = await fetchBucketObjectsExplicit(store.currentDirectory);
     }
   } catch (error) {
-    store.objects = [];
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      store.objects = await fetchBucketObjectsExplicit(store.currentDirectory);
+      return;
+    } catch (innerError) {
+      throw error;
+    }
   }
-});
-
-export async function fetchBucketObjects() {
-  store.objects = await fetchBucketObjectsExplicit(store.currentDirectory);
 }
 
 export async function fetchBucketObjectsExplicit(directory, findAllMatching = false) {
@@ -33,7 +44,7 @@ export async function fetchBucketObjectsExplicit(directory, findAllMatching = fa
 
   const s3client = new AWS.S3({ maxRetries: 0, region: store.region });
   const params = {
-    Bucket: store.currentBucket.trim(),
+    Bucket: store.currentBucket.trim().toLowerCase(),
     Delimiter: findAllMatching ? undefined : store.delimiter,
     Prefix: directory ? (directory !== store.delimiter ? `${directory}/` : directory) : undefined,
     RequestPayer: 'requester'
@@ -78,15 +89,19 @@ export async function validateConfiguration(bucket) {
 }
 
 export async function downloadObjects(bucket, keys) {
-  const s3client = new AWS.S3({ maxRetries: 0, region: store.rememberedBuckets.find(b => b.bucket === bucket).region || store.region });
+  const s3client = new AWS.S3({ maxRetries: 0, region: getBuckets().find(b => b.bucket === bucket).region || store.region });
 
+  const blobs = [];
   const downloadObject = async key => {
+    if (key.slice(-1)[0] === store.delimiter) {
+      return;
+    }
     const params = { Bucket: bucket, Key: key, RequestPayer: 'requester' };
     const result = await s3client.getObject(params).promise();
     const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
     const match = filenameRegex.exec(result.ContentDisposition);
     const filename = match && match[1].replace(/['"]/g, '') || key.split(store.delimiter).slice(-1)[0];
-    saveAs(new Blob([result.Body]), filename);
+    blobs.push({ blob: new Blob([result.Body]), filename, filepath: key, lastModified: result.LastModified });
   };
 
   await Promise.all(keys.map(async key => {
@@ -98,12 +113,17 @@ export async function downloadObjects(bucket, keys) {
     const bucketObjects = await fetchBucketObjectsExplicit(key, true);
     const additionalObjectKeys = bucketObjects.map(b => b.key);
     await Promise.all(additionalObjectKeys.map(additionalKey => downloadObject(additionalKey)));
-
-    // try {
-    //   const url = s3client.getSignedUrl('getObject', { Bucket: bucket, Key: key, Expires: 3600 });
-    //   window.open(url, '_blank');
-    // } catch (error) {
-    //   DEBUG.log(`Error creating getObject file url: ${key}`, error);
-    // }
   }));
+
+  if (blobs.length === 1) {
+    saveAs(blobs[0].blob, blobs[0].filename);
+    return;
+  }
+
+  const archiveAsync = new JsZip();
+  blobs.forEach(blob => {
+    archiveAsync.file(blob.filepath, blob.blob, { date: blob.lastModified, createFolders: true });
+  });
+  const archive = await archiveAsync.generateAsync({ type: 'blob' });
+  saveAs(archive, `${bucket}-${DateTime.local().toISODate()}.zip`);
 }

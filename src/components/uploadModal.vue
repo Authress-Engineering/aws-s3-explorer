@@ -15,7 +15,7 @@
               <table class="table table-bordered table-hover table-striped" id="upload-table">
                 <thead id="upload-thead">
                   <tr>
-                    <th></th>
+                    <th />
                     <th>Filename</th>
                     <th>Type</th>
                     <th>Size</th>
@@ -30,12 +30,12 @@
                     <td>{{ formatByteSize(file.size) }}</td>
 
                     <td>
-                      <div v-if="!state.uploadStarted"></div>
+                      <div v-if="!state.uploadStarted" />
                       <div v-else-if="typeof state.completionPercentageMap[index] === 'number'" class="progress">
                         <span class="progress-bar" :style="{ width: `${state.completionPercentageMap[index]}%` }">{{ state.completionPercentageMap[index] }}%</span>
                       </div>
                       <div v-else-if="state.completionPercentageMap[index] === 'DENIED'"><span class="progress-bar-danger">Access Denied</span></div>
-                      <div v-else-if="state.completionPercentageMap[index] === 'CANCELLED'"><span class="progress-bar-danger"></span></div>
+                      <div v-else-if="state.completionPercentageMap[index] === 'CANCELLED'"><span class="progress-bar-danger" /></div>
                       <div v-else-if="state.completionPercentageMap[index]"><span class="uploadError">{{ state.completionPercentageMap[index] }}</span></div>
                     </td>
                   </tr>
@@ -55,7 +55,6 @@
                 </div>
               </div>
 
-
               <div class="panel-body" style="overflow: auto; text-align: center">
                 Drag and drop files and folders you want to upload here.
                 <br><br>
@@ -72,7 +71,7 @@
           <div class="form-group">
             <div class="col-sm-offset-2 col-sm-10">
               <button :disabled="state.status === 'IN_PROGRESS'" type="button" class="btn btn-default" @click="closeUploads">Close</button>
-              <button v-if="uploadButtonText" type="button" class="btn btn-primary" @click="uploadClicked"><i class="fa fa-cloud-upload-alt fa-lg"></i> {{ uploadButtonText }}
+              <button v-if="uploadButtonText" type="button" class="btn btn-primary" @click="uploadClicked"><i class="fa fa-cloud-upload-alt fa-lg" /> {{ uploadButtonText }}
               </button>
             </div>
           </div>
@@ -82,9 +81,8 @@
   </div>
 </template>
 
-
 <script setup>
-import { reactive, onMounted, computed } from 'vue'
+import { reactive, computed } from 'vue';
 
 import { path2short, formatByteSize } from '../converters';
 import DEBUG from '../logger';
@@ -92,7 +90,6 @@ import store from '../store';
 
 const props = defineProps({ filesToUpload: Array });
 const emit = defineEmits(['uploadsCompleted']);
-
 
 const state = reactive({ uploadStarted: false, completionPercentageMap: {} });
 let uploadHandlerMap = {};
@@ -106,14 +103,16 @@ const status = computed(() => {
 
 const uploadButtonText = computed(() => {
   return {
-    'WAITING_FOR_APPROVAL': props.filesToUpload?.length === 1 ? `Upload 1 file` : `Upload ${props.filesToUpload?.length} files`,
-    'IN_PROGRESS': 'Cancel remaining uploads'
-  }[status.value]
+    WAITING_FOR_APPROVAL: props.filesToUpload?.length === 1 ? 'Upload 1 file' : `Upload ${props.filesToUpload?.length} files`,
+    IN_PROGRESS: 'Cancel remaining uploads'
+  }[status.value];
 });
 
 const uploadClicked = () => {
   if (!state.uploadStarted) {
-    return uploadFiles();
+    // eslint-disable-next-line no-use-before-define
+    uploadFiles();
+    return;
   }
 
   Object.keys(uploadHandlerMap).forEach(fileIndex => {
@@ -137,7 +136,7 @@ const uploadFiles = () => {
 
     const s3client = new AWS.S3({ region: store.region });
     const params = {
-      Bucket: store.currentBucket,
+      Bucket: store.currentBucket.trim().toLowerCase(),
       Key: (store.currentDirectory && `${store.currentDirectory}${store.delimiter}` || '') + (file.fullPath || file.name),
       ContentType: file.type, Body: file
     };
@@ -146,14 +145,12 @@ const uploadFiles = () => {
 
     state.completionPercentageMap[fileIndex] = 0;
 
-    const progressUpdatedHandler = (evt) => {
+    const progressUpdatedHandler = evt => {
       DEBUG.log('File:', file, 'Part:', evt.part, evt.loaded, 'of', evt.total);
-      const pc = evt.total ? ((evt.loaded * 100.0) / evt.total) : 0;
-      const pct = Math.round(pc);
-      state.completionPercentageMap[fileIndex] = 0;
+      state.completionPercentageMap[fileIndex] = Number(evt.total) && Math.round(Number(evt.loaded) / Number(evt.total) * 100) || 0;
     };
 
-    const startUploadHandler = (err, data) => {
+    const startUploadHandler = err => {
       if (err) {
         // AccessDenied is a normal consequence of lack of permission
         // and we do not treat this as completely unexpected
@@ -183,7 +180,6 @@ const uploadFiles = () => {
 .progress-bar-danger {
   width: 100%;
 }
-
 
 .progress-bar {
   min-width: 25px;

@@ -16,12 +16,16 @@
 This is an S3 Explorer for AWS. It provides a simple and straightforward way for users to login using SSO and explore available S3 Buckets. Everything is done in the browser and requires only minimal setup using either [AWS Cognito](https://) or [Authress](https://authress.io).
 
 Rhosys hosts an explorer to use out of the box for the community. For obvious security reasons, this is a UI only tool, and makes ZERO api calls to anywhere other than AWS. The following is a link to that explorer. However, if for some reason, other than security there is a benefit to hosting a clone of this, feel free to fork the repo and make any necessary changes. Alternatively, please contribute!
-## Go to the => [AWS S3 Explorer](https://console.rhosys.ch/)
+### Go to the => [AWS S3 Explorer](https://console.rhosys.ch/)
 
+### Or => [Deploy a white-labeled version to your custom domain](https://eu-west-1.console.aws.amazon.com/lambda/home?region=eu-west-1#/create/app?applicationId=arn:aws:serverlessrepo:eu-west-1:922723803004:applications/S3-Explorer)
+
+## The S3 Explorer:
 ![Folder selected screen](screenshots/explorer-folder.png)
 
-## The only setup step
+### Configuration: The only setup step
 Jump over to the [AWS S3 explorer configuration](https://console.rhosys.ch) to deploy the Cognito CFN template, and configure your SSO provider. That's it!
+* [Custom configuration](./docs/configuration.md)
 
 <!-- ## Display Options
 
@@ -56,3 +60,6 @@ Delete objects from a bucket succeeded:
 This project uses Vue 3, and as this is much different from Vue 2, recommend reading is available:
 * [General Updates](https://v3.vuejs.org/guide/computed.html)
 * [Script Setup tags](https://v3.vuejs.org/api/sfc-script-setup.html)
+
+### Troubleshooting builds
+**Error: OpenIDConnect provider's HTTPS certificate doesn't match configured thumbprint** - Update AWS IAM to use the thumbprint details of the issue [are available here](https://github.com/aws-actions/configure-aws-credentials/issues/357).

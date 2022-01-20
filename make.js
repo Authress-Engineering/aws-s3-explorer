@@ -76,7 +76,9 @@ commander
       console.log('Publish Result', result);
 
       const serverlessApplicationRepository = new aws.ServerlessApplicationRepository();
-      const template = require('./template/cloudformationTemplate.json');
+      const templateProvider = require('./template/cloudformationTemplate');
+      const lambdaFunction = await fs.readFile(path.join(__dirname, 'template/lambdaFunction.js'));
+      const template = templateProvider.getTemplate(lambdaFunction.toString());
       const params = {
         ApplicationId: `arn:aws:serverlessrepo:${aws.config.region}:${process.env.AWS_ACCOUNT_ID}:applications/S3-Explorer`,
         SemanticVersion: version,
@@ -91,6 +93,20 @@ commander
       process.exit(1);
     }
   });
+
+commander.command('test-setup')
+.description('Test the deployment')
+.action(async () => {
+  try {
+    const templateProvider = require('./template/cloudformationTemplate');
+    const lambdaFunction = await fs.readFile(path.join(__dirname, 'template/lambdaFunction.js'));
+    const template = templateProvider.getTemplate(lambdaFunction.toString());
+    await fs.writeFile(path.join(__dirname, 'template/cloudformationTemplate.json'), typeof template === 'object' ? JSON.stringify(template) : template);
+  } catch (error) {
+    console.log('Failed to push new application version', error);
+    process.exit(1);
+  }
+});
 
 commander.on('*', () => {
   if (commander.args.join(' ') === 'tests/**/*.js') { return; }

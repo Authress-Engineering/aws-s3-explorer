@@ -114,7 +114,7 @@ const deleteFiles = async (keys, objectMetadataList, recursion) => {
     DEBUG.log('Deleting key:', key);
     try {
       if (objectMap[key].type !== 'DIRECTORY') {
-        await s3client.deleteObject({ Bucket: store.currentBucket, Key: key }).promise();
+        await s3client.deleteObject({ Bucket: store.currentBucket.trim().toLowerCase(), Key: key }).promise();
       } else {
         const results = await fetchBucketObjectsExplicit(key);
 

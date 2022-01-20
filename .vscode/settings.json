@@ -5,15 +5,20 @@
     },
     "cSpell.words": [
         "Dropzone",
-        "ONEZONE",
         "exportparts",
+        "fontawesome",
+        "fortawesome",
+        "jszip",
         "kyleshockey",
+        "ONEZONE",
         "prismjs",
         "rapidoc",
         "redoc",
         "sublicensees",
         "tbody",
-        "thead"
+        "thead",
+        "vite",
+        "vitejs"
     ],
     "files.exclude": {
         "**/lib": true,
