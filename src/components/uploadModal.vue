@@ -147,7 +147,7 @@ const uploadFiles = () => {
 
     const progressUpdatedHandler = evt => {
       DEBUG.log('File:', file, 'Part:', evt.part, evt.loaded, 'of', evt.total);
-      state.completionPercentageMap[fileIndex] = 0;
+      state.completionPercentageMap[fileIndex] = Number(evt.total) && Math.round(Number(evt.loaded) / Number(evt.total) * 100) || 0;
     };
 
     const startUploadHandler = err => {
