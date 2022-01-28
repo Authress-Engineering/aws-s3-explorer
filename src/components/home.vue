@@ -56,7 +56,11 @@
               <div>
                 <span><a href="#" @click="exploreDirectory(null)">{{ store.currentBucket }}</a></span>&nbsp;/&nbsp;
                 <span v-for="(part, partIndex) in pathParts" :key="part">
-                  <a :style="{ 'text-decoration': partIndex + 1 === pathParts.length ? 'none' : undefined, color: partIndex + 1 === pathParts.length ? 'unset' : undefined, cursor: partIndex + 1 === pathParts.length ? 'unset' : 'pointer' }"
+                  <a :style="{
+                      'text-decoration': partIndex + 1 === pathParts.length ? 'none' : undefined,
+                      color: partIndex + 1 === pathParts.length ? 'unset' : undefined,
+                      cursor: partIndex + 1 === pathParts.length ? 'unset' : 'pointer'
+                    }"
                     :href="`#path=${pathParts.slice(0, partIndex + 1).join(store.delimiter)}`" @click="exploreDirectory(pathParts.slice(0, partIndex + 1).join(store.delimiter))">
                     {{ part.length > 30 ? `${part.slice(0, 30)}…` : part }}
                   </a>&nbsp;/&nbsp;
@@ -210,28 +214,32 @@ onMounted(async () => {
     return;
   }
 
-  if (!store.initialized) {
-    await login();
-    await fetchSharedSettings();
+  if (store.initialized) {
     store.globalLoader = false;
-
-    if (!store.tokens) {
-      store.showSettings = true;
-      store.objects = [];
-      return;
-    }
-
-    if (!store.currentBucket) {
-      if (getBuckets().length) {
-        store.currentBucket = getBuckets()[0].bucket?.trim().toLowerCase();
-        return;
-      }
-      store.showBucketSelector = true;
-      store.objects = [];
-      return;
-    }
+    return;
   }
+
+  await login();
+  await fetchSharedSettings();
   store.globalLoader = false;
+
+  if (!store.tokens) {
+    store.showSettings = true;
+    store.objects = [];
+    return;
+  }
+
+  if (!store.currentBucket) {
+    if (getBuckets().length) {
+      store.currentBucket = getBuckets()[0].bucket?.trim().toLowerCase();
+      return;
+    }
+    store.showBucketSelector = true;
+    store.objects = [];
+    return;
+  }
+
+  await refresh();
 });
 
 const fileAdded = file => {
