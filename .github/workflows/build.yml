@@ -36,6 +36,7 @@ jobs:
       with:
         aws-region: eu-west-1
         role-duration-seconds: 3600
+        # https://stackoverflow.com/questions/69247498/how-can-i-calculate-the-thumbprint-of-an-openid-connect-server
         role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubRunnerAssumedRole
         role-session-name: GitHubRunner-${{ github.repository_owner }}-S3Explorer-${{ github.run_number }}
     - name: After build
