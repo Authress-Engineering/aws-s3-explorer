@@ -52,34 +52,39 @@
           <!-- Panel including S3 object table -->
           <div class="panel-body" style="overflow: auto">
 
-            <div v-if="store.tokens && store.currentBucket" style="display: flex; align-items: center; justify-content: space-between">
-              <div>
-                <span><a href="#" @click="exploreDirectory(null)">{{ store.currentBucket }}</a></span>&nbsp;/&nbsp;
-                <span v-for="(part, partIndex) in pathParts" :key="part">
-                  <a :style="{
-                      'text-decoration': partIndex + 1 === pathParts.length ? 'none' : undefined,
-                      color: partIndex + 1 === pathParts.length ? 'unset' : undefined,
-                      cursor: partIndex + 1 === pathParts.length ? 'unset' : 'pointer'
-                    }"
-                    :href="`#path=${pathParts.slice(0, partIndex + 1).join(store.delimiter)}`" @click="exploreDirectory(pathParts.slice(0, partIndex + 1).join(store.delimiter))">
-                    {{ part.length > 30 ? `${part.slice(0, 30)}…` : part }}
-                  </a>&nbsp;/&nbsp;
-                </span>
+            <template v-if="store.tokens && store.currentBucket">
+              <div style="display: flex; align-items: center; justify-content: space-between">
+                <div>
+                  <span><a href="#" @click="exploreDirectory(null)">{{ store.currentBucket }}</a></span>&nbsp;/&nbsp;
+                  <span v-for="(part, partIndex) in pathParts" :key="part">
+                    <a :style="{
+                        'text-decoration': partIndex + 1 === pathParts.length ? 'none' : undefined,
+                        'color': partIndex + 1 === pathParts.length ? 'unset' : undefined,
+                        'cursor': partIndex + 1 === pathParts.length ? 'unset' : 'pointer'
+                      }"
+                      :href="`#path=${pathParts.slice(0, partIndex + 1).join(store.delimiter)}`" @click="exploreDirectory(pathParts.slice(0, partIndex + 1).join(store.delimiter))">
+                      {{ part.length > 30 ? `${part.slice(0, 30)}…` : part }}
+                    </a>&nbsp;/&nbsp;
+                  </span>
+                </div>
+                <div style="flex-shrink: 0; flex-grow: 1; display: flex; flex-direction: row; flex-wrap: no-wrap; justify-content: flex-end">
+                  <button type="button" style="cursor: pointer; margin-left: 0.5rem" class="text-primary btn btn-xs btn-warning"
+                    :disabled="!selectedKeysCount" @click="downloadFiles" title="Download files">
+                    <i class="fa fa-cloud-download-alt" style="margin-right: 0.5rem" />Download
+                  </button>
+                  <button type="button" style="cursor: pointer; margin-left: 0.5rem" class="text-primary btn btn-xs btn-primary" @click="store.showAddFolder = true" title="New folder">
+                    <i class="fa fa-folder-plus" style="margin-right: 0.5rem" />New Folder
+                  </button>
+                  <button type="button" style="cursor: pointer; margin-left: 0.5rem" class="text-primary btn btn-xs btn-danger"
+                    :disabled="!selectedKeysCount" @click="store.showTrash = true" title="Delete Objects">
+                    <i class="fa fa-trash-alt" style="margin-right: 0.5rem" />Delete Objects
+                  </button>
+                </div>
               </div>
-              <div style="flex-shrink: 0; flex-grow: 1; display: flex; flex-direction: row; flex-wrap: no-wrap; justify-content: flex-end">
-                <button type="button" style="cursor: pointer; margin-left: 0.5rem" class="text-primary btn btn-xs btn-warning"
-                  :disabled="!selectedKeysCount" @click="downloadFiles" title="Download files">
-                  <i class="fa fa-cloud-download-alt" style="margin-right: 0.5rem" />Download
-                </button>
-                <button type="button" style="cursor: pointer; margin-left: 0.5rem" class="text-primary btn btn-xs btn-primary" @click="store.showAddFolder = true" title="New folder">
-                  <i class="fa fa-folder-plus" style="margin-right: 0.5rem" />New Folder
-                </button>
-                <button type="button" style="cursor: pointer; margin-left: 0.5rem" class="text-primary btn btn-xs btn-danger"
-                  :disabled="!selectedKeysCount" @click="store.showTrash = true" title="Delete Objects">
-                  <i class="fa fa-trash-alt" style="margin-right: 0.5rem" />Delete Objects
-                </button>
+              <div class="d-flex justify-content-end" style="padding-top: 1rem;">
+                <input class="filter-results" type="text" v-model="state.filterText" placeholder="Filter results...">
               </div>
-            </div>
+            </template>
 
             <br>
 
@@ -172,7 +177,7 @@ import { fetchSharedSettings, login } from '../awsUtilities';
 import { formatByteSize } from '../converters';
 import { fetchBucketObjects, downloadObjects } from '../bucketManager';
 
-const state = reactive({ objectCount: 0, selectedKeys: {}, filesToUpload: [], globalSelect: false });
+const state = reactive({ objectCount: 0, selectedKeys: {}, filesToUpload: [], globalSelect: false, filterText: '' });
 
 const refresh = async () => {
   const spinnerAsync = new Promise(resolve => setTimeout(resolve, 1000));
@@ -264,7 +269,7 @@ const downloadFiles = async () => {
   await downloadObjects(store.currentBucket, Object.keys(state.selectedKeys));
 };
 
-const sortedObjects = computed(() => store.objects.sort((a, b) => a.key.localeCompare(b.key)));
+const sortedObjects = computed(() => store.objects.filter(o => !state.filterText || o.key.includes(state.filterText)).sort((a, b) => a.key.localeCompare(b.key)));
 const selectedKeysCount = computed(() => Object.keys(state.selectedKeys).filter(key => !store.deletedObjects[key] && state.selectedKeys[key]).length);
 
 const pathParts = computed(() => {
@@ -308,4 +313,18 @@ a {
   }
 }
 
+.filter-results {
+  cursor: pointer;
+  display: block;
+  width: 350px;
+  margin: 20px auto;
+  padding: 0.5rem 2rem;
+  background-size: 15px 15px;
+  background: white no-repeat 15px center;
+  font-size: 14px;
+  border: none !important;
+  border-radius: 5px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px,
+    rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+}
 </style>

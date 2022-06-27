@@ -77,6 +77,7 @@
             <div class="modal-footer">
               <div class="form-group">
                 <div class="col-sm-offset-2 col-sm-10">
+                  <button v-if="state.showError" type="button" class="btn btn-warning" @click="refreshBucketConfiguration">Refresh</button>
                   <button type="button" class="btn btn-primary" @click="store.showBucketSelector = false">Close</button>
                 </div>
               </div>
@@ -137,6 +138,10 @@ const newBucketEntered = newBucketRaw => {
   }
   store.currentBucket = newBucket;
   bucketSelected(newBucket);
+};
+
+const refreshBucketConfiguration = async () => {
+  await bucketSelected(store.currentBucket);
 };
 
 onMounted(async () => {

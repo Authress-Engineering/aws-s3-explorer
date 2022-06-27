@@ -187,3 +187,8 @@ table.dataTable tbody tr {
    max-width:1200px;
   }
 }
+
+/* Bootstrap 3.0 polyfills */
+.justify-content-end {
+    justify-content: end;
+}

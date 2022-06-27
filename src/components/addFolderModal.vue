@@ -51,13 +51,14 @@ const addFolder = async () => {
 
   const sanitizedFolderName = state.newFolderName.trim();
 
-  const ef = stripLeadTrailSlash(sanitizedFolderName);
-  const vpef = `${store.currentDirectory || ''}${store.delimiter}${ef}`;
-  const folder = stripLeadTrailSlash(vpef);
+  const relativeFolderName = stripLeadTrailSlash(sanitizedFolderName);
+  const absoluteFolderName = `${store.currentDirectory || ''}${store.delimiter}${relativeFolderName}`;
+  const folder = stripLeadTrailSlash(absoluteFolderName);
   DEBUG.log('Calculated directory:', folder);
 
   if (store.objects.find(o => o.key === folder && o.type === 'DIRECTORY')) {
     DEBUG.log(`Error: folder or object already exists at: ${folder}`);
+    store.showAddFolder = false;
     return;
   }
 
@@ -68,6 +69,8 @@ const addFolder = async () => {
   try {
     await s3client.headObject(params).promise();
     DEBUG.log('Directory already exists, skipping creation');
+    store.showAddFolder = false;
+    return;
   } catch (err1) {
     if (!err1) {
       DEBUG.log(`Error: directory or object already exists at: ${folder}`);
@@ -88,7 +91,10 @@ const addFolder = async () => {
     }
   }
 
-  store.objects.push({ key: `${store.currentDirectory}${store.delimiter}${sanitizedFolderName.split(store.delimiter)[0]}`, type: 'DIRECTORY' });
+  const visibleParentDirectoryName = relativeFolderName.split(store.delimiter)[0];
+  if (!store.objects.find(o => o.key === visibleParentDirectoryName && o.type === 'DIRECTORY')) {
+    store.objects.push({ key: folder, type: 'DIRECTORY' });
+  }
   store.showAddFolder = false;
 };
 </script>
