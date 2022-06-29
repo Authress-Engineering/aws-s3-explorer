@@ -252,17 +252,21 @@ const fileAdded = file => {
   store.showUploads = true;
 };
 
-const uploadsCompleted = () => {
-  state.filesToUpload = [];
-  state.selectedKeys = {};
-  fetchBucketObjects();
-};
-
 const exploreDirectory = async directory => {
   state.selectedKeys = {};
   state.globalSelect = false;
   store.currentDirectory = directory;
   await fetchBucketObjects();
+};
+
+const uploadsCompleted = async () => {
+  state.filesToUpload = [];
+  state.selectedKeys = {};
+  await fetchBucketObjects();
+
+  if (!store.objects.length) {
+    await exploreDirectory(store.currentDirectory.split(store.delimiter).slice(0, -1).join(store.delimiter));
+  }
 };
 
 const downloadFiles = async () => {
@@ -280,12 +284,6 @@ const pathParts = computed(() => {
 });
 
 const openGithub = () => { window.open('https://github.com/Rhosys/aws-s3-explorer#aws-s3-explorer', '_blank'); };
-
-watch(sortedObjects, async (newSortedObjects, previouslySortedObjects) => {
-  if (store.currentDirectory && previouslySortedObjects.length && !newSortedObjects.length) {
-    await exploreDirectory(store.currentDirectory.split(store.delimiter).slice(0, -1).join(store.delimiter));
-  }
-});
 
 const globalSelectWatcher = computed(() => state.globalSelect);
 

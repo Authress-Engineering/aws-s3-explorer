@@ -2,8 +2,11 @@ import { DateTime } from 'luxon';
 import { watch, computed } from 'vue';
 import { saveAs } from 'file-saver';
 import JsZip from 'jszip';
+import shortUuid from 'short-uuid';
 
 import store, { getBuckets } from './store';
+
+let currentBucketInvocationIdentifier = null;
 
 const currentBucket = computed({
   get() {
@@ -20,16 +23,16 @@ watch(currentBucket, async () => {
 
 export async function fetchBucketObjects() {
   try {
-    store.objects = await fetchBucketObjectsExplicit(store.currentDirectory);
+    const results = await fetchBucketObjectsExplicit(store.currentDirectory, null, null, true);
     // Sometimes the API just refuses to return real results the first time
-    if (!store.objects.length) {
+    if (!results.length) {
       await new Promise(resolve => setTimeout(resolve, 1000));
-      store.objects = await fetchBucketObjectsExplicit(store.currentDirectory);
+      await fetchBucketObjectsExplicit(store.currentDirectory, null, null, true);
     }
   } catch (error) {
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
-      store.objects = await fetchBucketObjectsExplicit(store.currentDirectory);
+      await fetchBucketObjectsExplicit(store.currentDirectory, null, null, true);
       return;
     } catch (innerError) {
       throw error;
@@ -37,7 +40,12 @@ export async function fetchBucketObjects() {
   }
 }
 
-export async function fetchBucketObjectsExplicit(directory, findAllMatching = false) {
+export async function fetchBucketObjectsExplicit(directory, findAllMatching = false, limit, populateBucketObjects) {
+  const thisInvocationIdentifier = shortUuid.generate();
+  if (populateBucketObjects) {
+    store.objects = [];
+    currentBucketInvocationIdentifier = thisInvocationIdentifier;
+  }
   if (!store.currentBucket) {
     return [];
   }
@@ -49,22 +57,34 @@ export async function fetchBucketObjectsExplicit(directory, findAllMatching = fa
     Prefix: directory ? (directory !== store.delimiter ? `${directory}/` : directory) : undefined,
     RequestPayer: 'requester'
   };
-  let resultList;
-  while (params.ContinuationToken || !resultList) {
+  let fullResultList;
+  while (params.ContinuationToken || !fullResultList) {
     const result = await s3client.listObjectsV2(params).promise();
-    resultList = (resultList || []).concat(result.CommonPrefixes.map(object => ({
+    const partialResultList = result.CommonPrefixes.map(object => ({
       key: object.Prefix.slice(0, -1) || store.delimiter,
       type: 'DIRECTORY'
-    }))).concat(result.Contents.map(object => ({
+    })).concat(result.Contents.map(object => ({
       key: object.Key,
       lastModified: DateTime.fromJSDate(new Date(object.LastModified)).toFormat('DD TTT'),
       size: object.Size,
       storageClass: object.StorageClass,
       type: 'PATH'
     })));
+
+    if (currentBucketInvocationIdentifier !== thisInvocationIdentifier) {
+      break;
+    }
+    
+    fullResultList = (fullResultList || []).concat(partialResultList);
+    if (populateBucketObjects) {
+      store.objects = fullResultList;
+    }
     params.ContinuationToken = result.NextContinuationToken;
+    if (limit && fullResultList.length >= limit) {
+      break;
+    }
   }
-  return resultList;
+  return fullResultList;
 }
 
 export async function validateConfiguration(bucket) {
@@ -73,7 +93,7 @@ export async function validateConfiguration(bucket) {
     await s3client.getBucketCors({ Bucket: bucket }).promise();
   } catch (err) {
     try {
-      await fetchBucketObjectsExplicit();
+      await fetchBucketObjectsExplicit(null, false, 1);
       return;
     } catch (error) {
       /** Ignore this fallback failure */
