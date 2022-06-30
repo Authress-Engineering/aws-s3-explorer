@@ -107,7 +107,6 @@ table.dataTable tbody tr {
 .modal-dialog {
     display: block;
     position: fixed;
-    margin: 10% auto 2.5%;
     top: 0;
     right: 0;
     left: 0;
