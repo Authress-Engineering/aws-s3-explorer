@@ -1,19 +1,19 @@
 # AWS S3 Explorer
 
-<p align="center">
-    <a href="./LICENSE" alt="apache 2.0 license">
-      <img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg">
-    </a>
-    <a href="https://eu-west-1.console.aws.amazon.com/lambda/home?region=eu-west-1#/create/app?applicationId=arn:aws:serverlessrepo:eu-west-1:922723803004:applications/S3-Explorer" alt="Installations">
-      <img src="https://img.shields.io/badge/Installed%20Deployments-1637-success">
-    </a>
-    <a href="https://eu-west-1.console.aws.amazon.com/lambda/home?region=eu-west-1#/create/app?applicationId=arn:aws:serverlessrepo:eu-west-1:922723803004:applications/S3-Explorer" alt="AWS Serverless Application">
-        <img src="https://img.shields.io/badge/AWS%20Serverless%20Application-S3%20Explorer-blue">
-    </a>
-</p>
-
-
 This is an S3 Explorer for AWS. It provides a simple and straightforward way for users to login using SSO and explore available S3 Buckets. Everything is done in the browser and requires only minimal setup using either [AWS Cognito](https://) or [Authress](https://authress.io).
+
+This is an open source project managed by the [Authress Engineering team](https://authress.io).
+
+<p align="center">
+    <a href="https://authress.io" alt="Authress Engineering">
+      <img src="https://img.shields.io/static/v1?label=Authress+Engineering&message=S3%20Explorer&color=%23FBAF0B&logo=androidauto&logoColor=%23FBAF0B"></a>
+    <a href="./LICENSE" alt="apache 2.0 license">
+      <img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg"></a>
+    <a href="https://eu-west-1.console.aws.amazon.com/lambda/home?region=eu-west-1#/create/app?applicationId=arn:aws:serverlessrepo:eu-west-1:922723803004:applications/S3-Explorer" alt="Installations">
+      <img src="https://img.shields.io/badge/Installed%20Deployments-1637-success"></a>
+    <a href="https://eu-west-1.console.aws.amazon.com/lambda/home?region=eu-west-1#/create/app?applicationId=arn:aws:serverlessrepo:eu-west-1:922723803004:applications/S3-Explorer" alt="AWS Serverless Application">
+        <img src="https://img.shields.io/badge/AWS%20Serverless%20Application-S3%20Explorer-blue"></a>
+</p>
 
 Rhosys hosts an explorer to use out of the box for the community. For obvious security reasons, this is a UI only tool, and makes ZERO api calls to anywhere other than AWS. The following is a link to that explorer. However, if for some reason, other than security there is a benefit to hosting a clone of this, feel free to fork the repo and make any necessary changes. Alternatively, please contribute!
 ### Go to the => [AWS S3 Explorer](https://console.rhosys.ch/)
