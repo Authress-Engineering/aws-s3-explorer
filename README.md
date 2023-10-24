@@ -2,7 +2,7 @@
 
 This is an S3 Explorer for AWS. It provides a simple and straightforward way for users to login using SSO and explore available S3 Buckets. Everything is done in the browser and requires only minimal setup using either [AWS Cognito](https://) or [Authress](https://authress.io).
 
-This is an open source project managed by the [Authress Engineering team](https://authress.io).
+This is an open source project managed by the [Authress Engineering team](https://authress.io) at Rhosys.
 
 <p align="center">
     <a href="https://authress.io" alt="Authress Engineering">
